@@ -31,7 +31,7 @@
             border: 1px solid #ccc; 
             border-radius: 5px; 
             font-size: 16px; 
-            box-sizing: border-box; /* Garante que não quebre o layout */
+            box-sizing: border-box;
         }
         button { 
             background-color: #28a745; 
@@ -56,7 +56,7 @@
         @media print {
             @page {
                 size: A4;
-                margin: 0; /* Remove margens do navegador para controlarmos via CSS */
+                margin: 0;
             }
             
             body { 
@@ -79,8 +79,8 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                /* MARGENS ABNT PARA CENTRALIZAR O TEXTO NA FOLHA */
-                padding: 2.5cm 2.5cm 2.5cm 3cm; /* Topo, Direita, Baixo, Esquerda */
+                /* MARGENS ABNT CENTRALIZADAS */
+                padding: 2.5cm 2.5cm 2.5cm 3cm; 
                 box-sizing: border-box;
                 
                 font-family: 'Times New Roman', Times, serif;
@@ -129,7 +129,6 @@
                 padding-top: 10px; 
             }
             
-            /* Rodapézinho discreto */
             .rodape-sis {
                 position: fixed;
                 bottom: 1cm;
@@ -222,38 +221,38 @@
     </div>
 
     <script>
-        // BANCO DE DADOS COMPLETO
+        // BANCO DE DADOS ATUALIZADO (Fontes: CNES e Prefeitura de Vitória)
         const baseDeDados = {
-            "Água Branca": "UBS Água Branca",
-            "Alto José Leal": "UBS Alto José Leal",
-            "Área Rural": "Unidade Volante Rural",
-            "Bela Vista": "UBS Bela Vista",
-            "Caiçara": "UBS Caiçara",
-            "Cajá": "Policlínica do Cajá",
-            "Cajueiro": "UBS Cajueiro",
-            "Campinas": "UBS Campinas",
-            "Conceição": "UBS Conceição",
-            "Centro": "Centro de Saúde da Mulher / Matriz",
-            "Distrito Industrial": "UBS Distrito Industrial",
-            "Distrito de Pirituba": "UBS Distrito de Pirituba",
-            "Flores": "UBS Flores",
-            "Jardim Ipiranga": "UBS Jardim Ipiranga",
-            "Jardim São Pedro": "UBS Jardim São Pedro",
-            "Lídia Queiroz": "UBS Lídia Queiroz",
-            "Livramento": "UBS Livramento",
-            "Luiz Gonzaga": "UBS Luiz Gonzaga",
-            "Mangueira": "UBS Mangueira",
-            "Maranhão": "UBS Maranhão",
-            "Mário Bezerra": "UBS Mário Bezerra",
-            "Maués": "UBS Maués",
-            "Militina Alves de Lira": "UBS Militina Alves",
-            "Nossa Senhora do Amparo": "UBS Amparo",
-            "Pirituba": "UBS Pirituba",
-            "Povoado Cidade de Deus": "UBS Cidade de Deus",
-            "Redenção": "UBS Redenção",
-            "Santana": "UBS Santana",
-            "São Vicente de Paulo": "UBS São Vicente",
-            "Universitário": "UBS Universitário"
+            "Água Branca": "USF Água Branca",
+            "Alto José Leal": "USF Alto José Leal",
+            "Área Rural": "USF Zona Rural / Unidade Volante", 
+            "Bela Vista": "USF Bela Vista I e II",
+            "Caiçara": "USF Caiçara I",
+            "Cajá": "USF CAIC / Policlínica do Cajá", 
+            "Cajueiro": "USF Cajueiro",
+            "Campinas": "USF Campinas",
+            "Conceição": "USF Loteamento Conceição I",
+            "Centro": "USF Matriz / Centro de Saúde da Mulher", 
+            "Distrito Industrial": "USF Distrito Industrial",
+            "Distrito de Pirituba": "USF Distrito de Pirituba",
+            "Flores": "USF Flores",
+            "Jardim Ipiranga": "USF Jardim Ipiranga I",
+            "Jardim São Pedro": "USF Jardim São Pedro",
+            "Lídia Queiroz": "USF Lídia Queiroz",
+            "Livramento": "USF Livramento",
+            "Luiz Gonzaga": "USF Luiz Gonzaga",
+            "Mangueira": "USF Mangueira",
+            "Maranhão": "USF Maranhão",
+            "Mário Bezerra": "USF Mário Bezerra",
+            "Maués": "USF Maués",
+            "Militina Alves de Lira": "USF Militina Alves de Lira",
+            "Nossa Senhora do Amparo": "USF Dr. Alvinho (Amparo)", 
+            "Pirituba": "USF Pirituba",
+            "Povoado Cidade de Deus": "USF Cidade de Deus",
+            "Redenção": "USF Redenção",
+            "Santana": "USF Santana",
+            "São Vicente de Paulo": "USF São Vicente de Paulo",
+            "Universitário": "USF Universitário / Lídia Queiroz II"
         };
 
         function localizarUBS() {
