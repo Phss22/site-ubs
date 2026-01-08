@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Contrarreferência - SUS Vitória</title>
+    <style>
+        /* Estilo da tela do computador (O que o médico vê) */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #005c99; text-align: center; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+        select, textarea, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        button { background-color: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-top: 20px; width: 100%; }
+        button:hover { background-color: #218838; }
+
+        /* Área do documento oficial (Invisível na tela, aparece só na impressão/PDF) */
+        #documento-oficial { display: none; }
+
+        /* Configuração de Impressão/PDF */
+        @media print {
+            body * { visibility: hidden; } /* Esconde o site */
+            .container { display: none; }
+            #documento-oficial, #documento-oficial * { 
+                visibility: visible; 
+                display: block; 
+            }
+            #documento-oficial {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 40px;
+                font-family: 'Times New Roman', Times, serif;
+            }
+            .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
+            .campo-impresso { margin-bottom: 15px; font-size: 14pt; }
+            .assinatura { margin-top: 100px; text-align: center; border-top: 1px solid black; width: 50%; margin-left: auto; margin-right: auto; padding-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🏥 Sistema de Encaminhamento</h1>
+        <p>Selecione o bairro do paciente para localizar a UBS de referência.</p>
+
+        <label for="bairro">Bairro de Residência:</label>
+        <select id="bairro" onchange="localizarUBS()">
+            <option value="">Selecione um bairro...</option>
+            <option value="Livramento">Livramento</option>
+            <option value="Bela Vista">Bela Vista</option>
+            <option value="Cajá">Cajá</option>
+            <option value="Centro">Centro</option>
+            <option value="Maués">Maués</option>
+            <option value="Zona Rural">Zona Rural</option>
+        </select>
+
+        <label for="ubs-encontrada">Unidade Básica de Saúde (UBS) de Referência:</label>
+        <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold;">
+
+        <label for="paciente">Nome do Paciente:</label>
+        <input type="text" id="paciente" placeholder="Nome completo">
+
+        <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
+        <textarea id="historia" rows="6" placeholder="Descreva o quadro clínico, tratamento realizado na urgência e orientações..."></textarea>
+
+        <button onclick="gerarPDF()">📄 Gerar Documento PDF</button>
+    </div>
+
+    <div id="documento-oficial">
+        <div class="cabecalho">
+            <h2>PREFEITURA DA VITÓRIA DE SANTO ANTÃO</h2>
+            <h3>SECRETARIA MUNICIPAL DE SAÚDE</h3>
+            <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
+        </div>
+        
+        <div class="campo-impresso"><strong>Paciente:</strong> <span id="print-paciente"></span></div>
+        <div class="campo-impresso"><strong>Bairro de Residência:</strong> <span id="print-bairro"></span></div>
+        <div class="campo-impresso"><strong>Unidade de Destino (UBS):</strong> <span id="print-ubs"></span></div>
+        
+        <hr>
+        
+        <h3>Histórico Clínico e Conduta:</h3>
+        <div class="campo-impresso" id="print-historia" style="text-align: justify; line-height: 1.5;"></div>
+
+        <div class="assinatura">
+            Assinatura e Carimbo do Médico<br>
+            Urgência/Emergência
+        </div>
+        
+        <p style="margin-top: 50px; font-size: 10pt; text-align: center;">Documento gerado eletronicamente pelo Sistema Integrado de Saúde.</p>
+    </div>
+
+    <script>
+        // BANCO DE DADOS (Aqui fica a "Planilha" que a Joana quer)
+        // Você pode adicionar todos os bairros de Vitória aqui
+        const baseDeDados = {
+            "Livramento": "UBS Livramento I",
+            "Bela Vista": "UBS Bela Vista - Dr. Fulano",
+            "Cajá": "Policlínica do Cajá",
+            "Centro": "Centro de Saúde da Mulher",
+            "Maués": "UBS Maués",
+            "Zona Rural": "UBS Rural - Unidade Volante"
+        };
+
+        function localizarUBS() {
+            const bairroSelecionado = document.getElementById('bairro').value;
+            const campoUBS = document.getElementById('ubs-encontrada');
+            
+            if (bairroSelecionado && baseDeDados[bairroSelecionado]) {
+                campoUBS.value = baseDeDados[bairroSelecionado];
+            } else {
+                campoUBS.value = "";
+            }
+        }
+
+        function gerarPDF() {
+            // Pega os dados do formulário
+            const nome = document.getElementById('paciente').value;
+            const bairro = document.getElementById('bairro').value;
+            const ubs = document.getElementById('ubs-encontrada').value;
+            const historia = document.getElementById('historia').value;
+
+            if(!nome || !bairro || !historia) {
+                alert("Por favor, preencha todos os campos antes de gerar o documento.");
+                return;
+            }
+
+            // Joga os dados para a folha de impressão
+            document.getElementById('print-paciente').innerText = nome;
+            document.getElementById('print-bairro').innerText = bairro;
+            document.getElementById('print-ubs').innerText = ubs;
+            document.getElementById('print-historia').innerText = historia;
+
+            // Abre a janela de impressão do navegador
+            window.print();
+        }
+    </script>
+</body>
+</html>
