@@ -5,38 +5,140 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sistema de Contrarreferência - SUS Vitória</title>
     <style>
-        /* Estilo da tela do computador (O que o médico vê) */
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* =========================================
+           ESTILO DA TELA (O que o médico vê no PC)
+           ========================================= */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+        }
         h1 { color: #005c99; text-align: center; }
         label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-        select, textarea, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
-        button { background-color: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-top: 20px; width: 100%; }
+        select, textarea, input { 
+            width: 100%; 
+            padding: 10px; 
+            margin-top: 5px; 
+            border: 1px solid #ccc; 
+            border-radius: 5px; 
+            font-size: 16px; 
+            box-sizing: border-box; /* Garante que não quebre o layout */
+        }
+        button { 
+            background-color: #28a745; 
+            color: white; 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            margin-top: 20px; 
+            width: 100%; 
+            font-weight: bold;
+        }
         button:hover { background-color: #218838; }
 
-        /* Área do documento oficial (Invisível na tela, aparece só na impressão/PDF) */
+        /* Área do documento oficial (Fica invisível na tela normal) */
         #documento-oficial { display: none; }
 
-        /* Configuração de Impressão/PDF */
+        /* =========================================
+           CONFIGURAÇÃO DE IMPRESSÃO (PDF CORRIGIDO)
+           ========================================= */
         @media print {
-            body * { visibility: hidden; } /* Esconde o site */
+            @page {
+                size: A4;
+                margin: 0; /* Remove margens do navegador para controlarmos via CSS */
+            }
+            
+            body { 
+                margin: 0; 
+                padding: 0; 
+                background: white;
+            }
+
+            /* Esconde a tela do sistema */
+            body * { visibility: hidden; }
             .container { display: none; }
+
+            /* Mostra apenas o documento oficial */
             #documento-oficial, #documento-oficial * { 
                 visibility: visible; 
-                display: block; 
             }
+
             #documento-oficial {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 40px;
+                /* MARGENS ABNT PARA CENTRALIZAR O TEXTO NA FOLHA */
+                padding: 2.5cm 2.5cm 2.5cm 3cm; /* Topo, Direita, Baixo, Esquerda */
+                box-sizing: border-box;
+                
                 font-family: 'Times New Roman', Times, serif;
+                font-size: 12pt;
                 color: black;
+                display: block;
             }
-            .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
-            .campo-impresso { margin-bottom: 15px; font-size: 14pt; }
-            .assinatura { margin-top: 100px; text-align: center; border-top: 1px solid black; width: 50%; margin-left: auto; margin-right: auto; padding-top: 10px; }
+
+            .cabecalho { 
+                text-align: center; 
+                border-bottom: 2px solid black; 
+                padding-bottom: 15px; 
+                margin-bottom: 30px; 
+            }
+            
+            .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; }
+            .cabecalho h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
+            .cabecalho p { font-size: 12pt; margin: 10px 0; font-weight: bold; letter-spacing: 1px; }
+
+            .campo-impresso { 
+                margin-bottom: 25px; 
+                font-size: 13pt;
+                line-height: 1.6;
+            }
+
+            strong { font-weight: bold; }
+
+            hr { 
+                margin: 30px 0; 
+                border: 0; 
+                border-top: 1px solid #000; 
+            }
+
+            #print-historia {
+                text-align: justify;
+                min-height: 100px;
+            }
+
+            .assinatura { 
+                margin-top: 100px; 
+                text-align: center; 
+                border-top: 1px solid black; 
+                width: 60%; 
+                margin-left: auto; 
+                margin-right: auto; 
+                padding-top: 10px; 
+            }
+            
+            /* Rodapézinho discreto */
+            .rodape-sis {
+                position: fixed;
+                bottom: 1cm;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 9pt;
+                color: #555;
+            }
         }
     </style>
 </head>
@@ -100,26 +202,27 @@
             <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
         </div>
         
-        <div class="campo-impresso"><strong>Paciente:</strong> <span id="print-paciente"></span></div>
-        <div class="campo-impresso"><strong>Bairro de Residência:</strong> <span id="print-bairro"></span></div>
-        <div class="campo-impresso"><strong>Unidade de Destino (UBS):</strong> <span id="print-ubs"></span></div>
+        <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
+        <div class="campo-impresso"><strong>Bairro de Residência:</strong> <br> <span id="print-bairro"></span></div>
+        <div class="campo-impresso"><strong>Unidade de Destino (UBS):</strong> <br> <span id="print-ubs"></span></div>
         
         <hr>
         
         <h3>Histórico Clínico e Conduta:</h3>
-        <div class="campo-impresso" id="print-historia" style="text-align: justify; line-height: 1.5;"></div>
+        <div class="campo-impresso" id="print-historia"></div>
 
         <div class="assinatura">
             Assinatura e Carimbo do Médico<br>
             Urgência/Emergência
         </div>
         
-        <p style="margin-top: 50px; font-size: 10pt; text-align: center;">Documento gerado eletronicamente pelo Sistema Integrado de Saúde.</p>
+        <div class="rodape-sis">
+            Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
+        </div>
     </div>
 
     <script>
-        // BANCO DE DADOS ATUALIZADO
-        // Edite os valores abaixo com os nomes reais dos Postos de Saúde de cada bairro
+        // BANCO DE DADOS COMPLETO
         const baseDeDados = {
             "Água Branca": "UBS Água Branca",
             "Alto José Leal": "UBS Alto José Leal",
