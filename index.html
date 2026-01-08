@@ -10,7 +10,7 @@
         .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         h1 { color: #005c99; text-align: center; }
         label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-        select, textarea, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; }
+        select, textarea, input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; font-size: 16px; box-sizing: border-box; }
         button { background-color: #28a745; color: white; padding: 15px 30px; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; margin-top: 20px; width: 100%; }
         button:hover { background-color: #218838; }
 
@@ -32,6 +32,7 @@
                 width: 100%;
                 padding: 40px;
                 font-family: 'Times New Roman', Times, serif;
+                color: black;
             }
             .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
             .campo-impresso { margin-bottom: 15px; font-size: 14pt; }
@@ -48,12 +49,36 @@
         <label for="bairro">Bairro de Residência:</label>
         <select id="bairro" onchange="localizarUBS()">
             <option value="">Selecione um bairro...</option>
-            <option value="Livramento">Livramento</option>
+            <option value="Água Branca">Água Branca</option>
+            <option value="Alto José Leal">Alto José Leal</option>
+            <option value="Área Rural">Área Rural de Vitória</option>
             <option value="Bela Vista">Bela Vista</option>
+            <option value="Caiçara">Caiçara</option>
             <option value="Cajá">Cajá</option>
-            <option value="Centro">Centro</option>
+            <option value="Cajueiro">Cajueiro</option>
+            <option value="Campinas">Campinas</option>
+            <option value="Conceição">Conceição</option>
+            <option value="Centro">Centro (Matriz)</option>
+            <option value="Distrito Industrial">Distrito Industrial</option>
+            <option value="Distrito de Pirituba">Distrito de Pirituba</option>
+            <option value="Flores">Flores</option>
+            <option value="Jardim Ipiranga">Jardim Ipiranga</option>
+            <option value="Jardim São Pedro">Jardim São Pedro</option>
+            <option value="Lídia Queiroz">Lídia Queiroz</option>
+            <option value="Livramento">Livramento</option>
+            <option value="Luiz Gonzaga">Luiz Gonzaga</option>
+            <option value="Mangueira">Mangueira</option>
+            <option value="Maranhão">Maranhão</option>
+            <option value="Mário Bezerra">Mário Bezerra</option>
             <option value="Maués">Maués</option>
-            <option value="Zona Rural">Zona Rural</option>
+            <option value="Militina Alves de Lira">Militina Alves de Lira</option>
+            <option value="Nossa Senhora do Amparo">Nossa Senhora do Amparo</option>
+            <option value="Pirituba">Pirituba</option>
+            <option value="Povoado Cidade de Deus">Povoado Cidade de Deus</option>
+            <option value="Redenção">Redenção</option>
+            <option value="Santana">Santana</option>
+            <option value="São Vicente de Paulo">São Vicente de Paulo</option>
+            <option value="Universitário">Universitário</option>
         </select>
 
         <label for="ubs-encontrada">Unidade Básica de Saúde (UBS) de Referência:</label>
@@ -93,15 +118,39 @@
     </div>
 
     <script>
-        // BANCO DE DADOS (Aqui fica a "Planilha" que a Joana quer)
-        // Você pode adicionar todos os bairros de Vitória aqui
+        // BANCO DE DADOS ATUALIZADO
+        // Edite os valores abaixo com os nomes reais dos Postos de Saúde de cada bairro
         const baseDeDados = {
-            "Livramento": "UBS Livramento I",
-            "Bela Vista": "UBS Bela Vista - Dr. Fulano",
+            "Água Branca": "UBS Água Branca",
+            "Alto José Leal": "UBS Alto José Leal",
+            "Área Rural": "Unidade Volante Rural",
+            "Bela Vista": "UBS Bela Vista",
+            "Caiçara": "UBS Caiçara",
             "Cajá": "Policlínica do Cajá",
-            "Centro": "Centro de Saúde da Mulher",
+            "Cajueiro": "UBS Cajueiro",
+            "Campinas": "UBS Campinas",
+            "Conceição": "UBS Conceição",
+            "Centro": "Centro de Saúde da Mulher / Matriz",
+            "Distrito Industrial": "UBS Distrito Industrial",
+            "Distrito de Pirituba": "UBS Distrito de Pirituba",
+            "Flores": "UBS Flores",
+            "Jardim Ipiranga": "UBS Jardim Ipiranga",
+            "Jardim São Pedro": "UBS Jardim São Pedro",
+            "Lídia Queiroz": "UBS Lídia Queiroz",
+            "Livramento": "UBS Livramento",
+            "Luiz Gonzaga": "UBS Luiz Gonzaga",
+            "Mangueira": "UBS Mangueira",
+            "Maranhão": "UBS Maranhão",
+            "Mário Bezerra": "UBS Mário Bezerra",
             "Maués": "UBS Maués",
-            "Zona Rural": "UBS Rural - Unidade Volante"
+            "Militina Alves de Lira": "UBS Militina Alves",
+            "Nossa Senhora do Amparo": "UBS Amparo",
+            "Pirituba": "UBS Pirituba",
+            "Povoado Cidade de Deus": "UBS Cidade de Deus",
+            "Redenção": "UBS Redenção",
+            "Santana": "UBS Santana",
+            "São Vicente de Paulo": "UBS São Vicente",
+            "Universitário": "UBS Universitário"
         };
 
         function localizarUBS() {
@@ -116,7 +165,6 @@
         }
 
         function gerarPDF() {
-            // Pega os dados do formulário
             const nome = document.getElementById('paciente').value;
             const bairro = document.getElementById('bairro').value;
             const ubs = document.getElementById('ubs-encontrada').value;
@@ -127,13 +175,11 @@
                 return;
             }
 
-            // Joga os dados para a folha de impressão
             document.getElementById('print-paciente').innerText = nome;
             document.getElementById('print-bairro').innerText = bairro;
             document.getElementById('print-ubs').innerText = ubs;
             document.getElementById('print-historia').innerText = historia;
 
-            // Abre a janela de impressão do navegador
             window.print();
         }
     </script>
