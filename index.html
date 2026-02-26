@@ -3,17 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Contrarreferência - Alta Hospitalar</title>
+    <title>Sistema de Contrarreferência - SUS Vitória</title>
     <style>
         /* =========================================
-           ESTILO DA TELA (Interface do Médico)
+           ESTILO DA TELA (O que o médico vê no PC)
            ========================================= */
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f4f7f6; 
+            background-color: #f0f2f5; 
             margin: 0; 
             padding: 20px; 
-            color: #333;
         }
         .container { 
             max-width: 800px; 
@@ -21,100 +20,133 @@
             background: white; 
             padding: 30px; 
             border-radius: 10px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
-        h1 { color: #005c99; text-align: center; font-size: 24px; margin-bottom: 5px; }
-        .subtitulo { text-align: center; color: #666; margin-bottom: 30px; }
-        
-        fieldset {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 25px;
-            background-color: #fafafa;
-        }
-        legend {
-            font-weight: bold;
-            color: #005c99;
-            background: white;
-            padding: 0 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        label { display: block; margin-top: 10px; font-weight: 600; font-size: 14px; }
-        select, textarea, input[type="text"], input[type="date"] { 
+        h1 { color: #005c99; text-align: center; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+        select, textarea, input { 
             width: 100%; 
             padding: 10px; 
             margin-top: 5px; 
             border: 1px solid #ccc; 
             border-radius: 5px; 
-            font-size: 15px; 
+            font-size: 16px; 
             box-sizing: border-box;
-            transition: border-color 0.3s;
         }
-        select:focus, textarea:focus, input:focus {
-            border-color: #005c99;
-            outline: none;
-        }
-        .row { display: flex; gap: 15px; }
-        .col { flex: 1; }
-
         button { 
-            background-color: #005c99; 
+            background-color: #28a745; 
             color: white; 
             padding: 15px 30px; 
             border: none; 
             border-radius: 5px; 
             cursor: pointer; 
             font-size: 18px; 
-            margin-top: 10px; 
+            margin-top: 20px; 
             width: 100%; 
             font-weight: bold;
-            transition: background-color 0.3s;
         }
-        button:hover { background-color: #004370; }
+        button:hover { background-color: #218838; }
 
+        /* Área do documento oficial (Fica invisível na tela normal) */
         #documento-oficial { display: none; }
 
         /* =========================================
-           CONFIGURAÇÃO DE IMPRESSÃO (PDF)
+           CONFIGURAÇÃO DE IMPRESSÃO (PDF CORRIGIDO)
            ========================================= */
         @media print {
-            @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; background: white; }
+            @page {
+                size: A4;
+                margin: 0;
+            }
+            
+            body { 
+                margin: 0; 
+                padding: 0; 
+                background: white;
+            }
+
+            /* Esconde a tela do sistema */
             body * { visibility: hidden; }
             .container { display: none; }
 
-            #documento-oficial, #documento-oficial * { visibility: visible; }
+            /* Mostra apenas o documento oficial */
+            #documento-oficial, #documento-oficial * { 
+                visibility: visible; 
+            }
 
             #documento-oficial {
-                position: absolute; left: 0; top: 0; width: 100%;
-                padding: 2cm 2cm 2cm 2.5cm; box-sizing: border-box;
-                font-family: Arial, Helvetica, sans-serif; color: black; display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                /* MARGENS ABNT CENTRALIZADAS */
+                padding: 2.5cm 2.5cm 2.5cm 3cm; 
+                box-sizing: border-box;
+                
+                font-family: 'Times New Roman', Times, serif;
+                font-size: 12pt;
+                color: black;
+                display: block;
             }
 
-            .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 10px; margin-bottom: 20px; }
-            .cabecalho h2 { font-size: 14pt; margin: 2px 0; }
-            .cabecalho h3 { font-size: 12pt; margin: 2px 0; font-weight: normal; }
-            .cabecalho p { font-size: 12pt; margin: 8px 0; font-weight: bold; text-decoration: underline; }
+            .cabecalho { 
+                text-align: center; 
+                border-bottom: 2px solid black; 
+                padding-bottom: 15px; 
+                margin-bottom: 30px; 
+            }
+            
+            .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; }
+            .cabecalho h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
+            .cabecalho p { font-size: 12pt; margin: 10px 0; font-weight: bold; letter-spacing: 1px; }
 
-            .secao-print { border: 1px solid #000; padding: 10px; margin-bottom: 15px; border-radius: 3px; }
-            .titulo-secao {
-                font-size: 11pt; font-weight: bold; background-color: #eee;
-                padding: 3px 5px; margin: -10px -10px 10px -10px; border-bottom: 1px solid #000;
+            .campo-impresso { 
+                margin-bottom: 25px; 
+                font-size: 13pt;
+                line-height: 1.6;
             }
 
-            .linha-dados { margin-bottom: 8px; font-size: 11pt; }
-            .linha-dados strong { margin-right: 5px; }
-            .bloco-texto { font-size: 11pt; text-align: justify; margin-bottom: 10px; min-height: 40px; }
+            strong { font-weight: bold; }
+
+            hr { 
+                margin: 30px 0; 
+                border: 0; 
+                border-top: 1px solid #000; 
+            }
+
+            #print-historia {
+                text-align: justify;
+                min-height: 100px;
+            }
 
             .assinatura { 
-                margin-top: 60px; text-align: center; border-top: 1px solid black; 
-                width: 60%; margin-left: auto; margin-right: auto; padding-top: 5px; font-size: 11pt;
+                margin-top: 100px; 
+                text-align: center; 
+                border-top: 1px solid black; 
+                width: 60%; 
+                margin-left: auto; 
+                margin-right: auto; 
+                padding-top: 10px; 
             }
+            
+            /* Rodapé Centralizado */
             .rodape-sis {
-                position: fixed; bottom: 1cm; left: 0; width: 100%; text-align: center; font-size: 8pt; color: #555;
+                position: fixed;
+                bottom: 1cm;
+                left: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 9pt;
+                color: #555;
+            }
+
+            /* Versão no cantinho direito */
+            .versao-canto {
+                position: fixed;
+                bottom: 1cm;
+                right: 2cm; /* Alinhado com a margem direita */
+                font-size: 8pt;
+                color: #ccc;
             }
         }
     </style>
@@ -122,209 +154,146 @@
 <body>
 
     <div class="container">
-        <h1>🏥 Sistema de Contrarreferência</h1>
-        <p class="subtitulo">Encaminhamento Estruturado - Alta Hospitalar para Atenção Primária</p>
+        <h1>🏥 Sistema de Encaminhamento</h1>
+        <p>Selecione o bairro do paciente para localizar a UBS de referência.</p>
 
-        <fieldset>
-            <legend>1. Identificação do Paciente</legend>
-            <label for="paciente">Nome Completo <span style="color:red">*</span></label>
-            <input type="text" id="paciente" placeholder="Ex: João da Silva (Teste acentuação: João, Conceição)">
+        <label for="bairro">Bairro de Residência:</label>
+        <select id="bairro" onchange="localizarUBS()">
+            <option value="">Selecione um bairro...</option>
+            <option value="Água Branca">Água Branca</option>
+            <option value="Alto José Leal">Alto José Leal</option>
+            <option value="Área Rural">Área Rural de Vitória</option>
+            <option value="Bela Vista">Bela Vista</option>
+            <option value="Caiçara">Caiçara</option>
+            <option value="Cajá">Cajá</option>
+            <option value="Cajueiro">Cajueiro</option>
+            <option value="Campinas">Campinas</option>
+            <option value="Conceição">Conceição</option>
+            <option value="Centro">Centro (Matriz)</option>
+            <option value="Distrito Industrial">Distrito Industrial</option>
+            <option value="Distrito de Pirituba">Distrito de Pirituba</option>
+            <option value="Flores">Flores</option>
+            <option value="Jardim Ipiranga">Jardim Ipiranga</option>
+            <option value="Jardim São Pedro">Jardim São Pedro</option>
+            <option value="Lídia Queiroz">Lídia Queiroz</option>
+            <option value="Livramento">Livramento</option>
+            <option value="Luiz Gonzaga">Luiz Gonzaga</option>
+            <option value="Mangueira">Mangueira</option>
+            <option value="Maranhão">Maranhão</option>
+            <option value="Mário Bezerra">Mário Bezerra</option>
+            <option value="Maués">Maués</option>
+            <option value="Militina Alves de Lira">Militina Alves de Lira</option>
+            <option value="Nossa Senhora do Amparo">Nossa Senhora do Amparo</option>
+            <option value="Pirituba">Pirituba</option>
+            <option value="Povoado Cidade de Deus">Povoado Cidade de Deus</option>
+            <option value="Redenção">Redenção</option>
+            <option value="Santana">Santana</option>
+            <option value="São Vicente de Paulo">São Vicente de Paulo</option>
+            <option value="Universitário">Universitário</option>
+        </select>
 
-            <div class="row">
-                <div class="col">
-                    <label for="cns">Cartão Nacional de Saúde (CNS) / CPF</label>
-                    <input type="text" id="cns" placeholder="Apenas números">
-                </div>
-                <div class="col">
-                    <label for="nascimento">Data de Nascimento</label>
-                    <div style="display: flex; gap: 5px;">
-                        <input type="text" id="nascimento" placeholder="DD/MM/AAAA" maxlength="10" style="flex: 1;">
-                        <input type="date" id="nascimento-picker" style="width: 45px; cursor: pointer; padding: 5px;">
-                    </div>
-                </div>
-            </div>
-        </fieldset>
+        <label for="ubs-encontrada">Unidade Básica de Saúde (UBS) de Referência:</label>
+        <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold;">
 
-        <fieldset>
-            <legend>2. Localização e Unidade de Destino</legend>
-            <label for="bairro">Bairro de Residência <span style="color:red">*</span></label>
-            <select id="bairro">
-                <option value="">Selecione um bairro...</option>
-                <option value="Água Branca">Água Branca</option>
-                <option value="Bela Vista">Bela Vista (Possui Múltiplas UBSs)</option>
-                <option value="Caiçara">Caiçara (Possui Múltiplas UBSs)</option>
-                <option value="Centro">Centro (Matriz)</option>
-                <option value="Livramento">Livramento</option>
-                <option value="Universitário">Universitário</option>
-            </select>
+        <label for="paciente">Nome do Paciente:</label>
+        <input type="text" id="paciente" placeholder="Nome completo">
 
-            <label for="ubs-container">Unidade Básica de Saúde (UBS) de Referência:</label>
-            <div id="ubs-container">
-                <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold; color: #005c99;">
-            </div>
-        </fieldset>
+        <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
+        <textarea id="historia" rows="6" placeholder="Descreva o quadro clínico, tratamento realizado na urgência e orientações..."></textarea>
 
-        <fieldset>
-            <legend>3. Dados Clínicos e Conduta para a APS</legend>
-            
-            <label for="cid">Diagnóstico Principal (com CID-10 se possível) <span style="color:red">*</span></label>
-            <input type="text" id="cid" placeholder="Ex: Hipertensão Arterial (I10)">
-
-            <label for="resumo">Resumo da Internação / Motivo do Encaminhamento <span style="color:red">*</span></label>
-            <textarea id="resumo" rows="4" placeholder="Descreva a evolução..."></textarea>
-
-            <label for="medicacoes">Medicações de Uso Contínuo na Alta</label>
-            <textarea id="medicacoes" rows="2" placeholder="Ex: Losartana 50mg..."></textarea>
-
-            <label for="plano">Plano de Cuidados (O que a equipe da UBS deve fazer) <span style="color:red">*</span></label>
-            <textarea id="plano" rows="3" placeholder="Ex: Solicito aferição de PA..."></textarea>
-        </fieldset>
-
-        <button onclick="gerarPDF()">📄 Gerar Documento de Alta / Encaminhamento</button>
+        <button onclick="gerarPDF()">📄 Gerar Documento PDF</button>
     </div>
 
     <div id="documento-oficial">
         <div class="cabecalho">
-            <h2>SISTEMA ÚNICO DE SAÚDE - SUS</h2>
+            <h2>PREFEITURA DA VITÓRIA DE SANTO ANTÃO</h2>
             <h3>SECRETARIA MUNICIPAL DE SAÚDE</h3>
-            <p>CONTRARREFERÊNCIA / ALTA HOSPITALAR PARA APS</p>
+            <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
         </div>
         
-        <div class="secao-print">
-            <div class="titulo-secao">1. IDENTIFICAÇÃO DO PACIENTE</div>
-            <div class="linha-dados"><strong>Nome:</strong> <span id="print-paciente"></span></div>
-            <div class="linha-dados" style="display: flex; gap: 40px;">
-                <div><strong>CNS/CPF:</strong> <span id="print-cns"></span></div>
-                <div><strong>Data de Nascimento:</strong> <span id="print-nasc"></span></div>
-            </div>
-        </div>
-
-        <div class="secao-print">
-            <div class="titulo-secao">2. UNIDADE DE DESTINO (ATENÇÃO PRIMÁRIA)</div>
-            <div class="linha-dados"><strong>Bairro de Residência:</strong> <span id="print-bairro"></span></div>
-            <div class="linha-dados"><strong>Encaminhado para (UBS):</strong> <span id="print-ubs"></span></div>
-        </div>
+        <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
+        <div class="campo-impresso"><strong>Bairro de Residência:</strong> <br> <span id="print-bairro"></span></div>
+        <div class="campo-impresso"><strong>Unidade de Destino (UBS):</strong> <br> <span id="print-ubs"></span></div>
         
-        <div class="secao-print">
-            <div class="titulo-secao">3. INFORMAÇÕES CLÍNICAS</div>
-            <div class="linha-dados"><strong>Diagnóstico Principal / CID:</strong> <span id="print-cid"></span></div>
-            <br>
-            <div class="linha-dados"><strong>Resumo da Internação / Motivo:</strong></div>
-            <div class="bloco-texto" id="print-resumo"></div>
-            <div class="linha-dados"><strong>Medicações na Alta:</strong></div>
-            <div class="bloco-texto" id="print-medicacoes"></div>
-            <div class="linha-dados"><strong>Plano de Cuidados para a UBS (Conduta solicitada):</strong></div>
-            <div class="bloco-texto" id="print-plano"></div>
-        </div>
+        <hr>
+        
+        <h3>Histórico Clínico e Conduta:</h3>
+        <div class="campo-impresso" id="print-historia"></div>
 
         <div class="assinatura">
-            Assinatura e Carimbo do Médico Assistente<br>
-            Data: _____ / _____ / ________
+            Assinatura e Carimbo do Médico<br>
+            Urgência/Emergência
         </div>
         
         <div class="rodape-sis">
-            Documento gerado eletronicamente.
+            Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
+        </div>
+        <div class="versao-canto">
+            v0.1.0
         </div>
     </div>
 
     <script>
-        // BANCO DE DADOS ATUALIZADO (Aceita múltiplas UBSs por bairro)
-        // Note que agora as respostas são Arrays (listas) em vez de textos simples.
+        // BANCO DE DADOS ATUALIZADO (Fontes: CNES e Prefeitura de Vitória)
         const baseDeDados = {
-            "Água Branca": ["USF Água Branca"],
-            "Bela Vista": ["USF Bela Vista I", "USF Bela Vista II"], // Exemplo de múltiplas
-            "Caiçara": ["USF Caiçara I", "USF Caiçara II"], // Exemplo de múltiplas
-            "Centro": ["USF Matriz / Centro de Saúde da Mulher"], 
-            "Livramento": ["USF Livramento"],
-            "Universitário": ["USF Universitário"]
+            "Água Branca": "USF Água Branca",
+            "Alto José Leal": "USF Alto José Leal",
+            "Área Rural": "USF Zona Rural / Unidade Volante", 
+            "Bela Vista": "USF Bela Vista I e II",
+            "Caiçara": "USF Caiçara I",
+            "Cajá": "USF CAIC / Policlínica do Cajá", 
+            "Cajueiro": "USF Cajueiro",
+            "Campinas": "USF Campinas",
+            "Conceição": "USF Loteamento Conceição I",
+            "Centro": "USF Matriz / Centro de Saúde da Mulher", 
+            "Distrito Industrial": "USF Distrito Industrial",
+            "Distrito de Pirituba": "USF Distrito de Pirituba",
+            "Flores": "USF Flores",
+            "Jardim Ipiranga": "USF Jardim Ipiranga I",
+            "Jardim São Pedro": "USF Jardim São Pedro",
+            "Lídia Queiroz": "USF Lídia Queiroz",
+            "Livramento": "USF Livramento",
+            "Luiz Gonzaga": "USF Luiz Gonzaga",
+            "Mangueira": "USF Mangueira",
+            "Maranhão": "USF Maranhão",
+            "Mário Bezerra": "USF Mário Bezerra",
+            "Maués": "USF Maués",
+            "Militina Alves de Lira": "USF Militina Alves de Lira",
+            "Nossa Senhora do Amparo": "USF Dr. Alvinho (Amparo)", 
+            "Pirituba": "USF Pirituba",
+            "Povoado Cidade de Deus": "USF Cidade de Deus",
+            "Redenção": "USF Redenção",
+            "Santana": "USF Santana",
+            "São Vicente de Paulo": "USF São Vicente de Paulo",
+            "Universitário": "USF Universitário / Lídia Queiroz II"
         };
 
-        // EVENT LISTENERS (Forma mais segura e moderna de escutar eventos sem bugar a digitação)
-        document.addEventListener("DOMContentLoaded", () => {
-            const inputNasc = document.getElementById('nascimento');
-            const pickerNasc = document.getElementById('nascimento-picker');
-            const selectBairro = document.getElementById('bairro');
+        function localizarUBS() {
+            const bairroSelecionado = document.getElementById('bairro').value;
+            const campoUBS = document.getElementById('ubs-encontrada');
+            
+            if (bairroSelecionado && baseDeDados[bairroSelecionado]) {
+                campoUBS.value = baseDeDados[bairroSelecionado];
+            } else {
+                campoUBS.value = "";
+            }
+        }
 
-            // Máscara de data apenas no campo específico, sem atrapalhar o texto
-            inputNasc.addEventListener('input', (e) => {
-                // Se o usuário estiver no meio da composição de um acento (dead key), não faz nada.
-                if (e.isComposing) return;
-                
-                let v = inputNasc.value.replace(/\D/g, ''); 
-                if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,4}).*/, '$1/$2/$3');
-                else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2}).*/, '$1/$2');
-                inputNasc.value = v;
-            });
-
-            // Sincronizar calendário
-            pickerNasc.addEventListener('change', () => {
-                if (pickerNasc.value) {
-                    const partes = pickerNasc.value.split('-'); 
-                    inputNasc.value = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                }
-            });
-
-            // Lógica de UBS (simples ou múltipla)
-            selectBairro.addEventListener('change', () => {
-                const bairroSelecionado = selectBairro.value;
-                const container = document.getElementById('ubs-container');
-                
-                // Limpa o container
-                container.innerHTML = '';
-
-                if (!bairroSelecionado || !baseDeDados[bairroSelecionado]) {
-                    container.innerHTML = `<input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef;">`;
-                    return;
-                }
-
-                const unidades = baseDeDados[bairroSelecionado];
-
-                if (unidades.length === 1) {
-                    // Se tem só uma UBS, mostra o input trancado (readonly) igual antes
-                    container.innerHTML = `<input type="text" id="ubs-encontrada" value="${unidades[0]}" readonly style="background-color: #e9ecef; font-weight: bold; color: #005c99;">`;
-                } else {
-                    // Se tem mais de uma UBS, cria um Select para o médico escolher qual a correta
-                    let htmlSelect = `<select id="ubs-encontrada" style="border-color: #e74c3c; background-color: #fdf2f0;">`;
-                    htmlSelect += `<option value="">ATENÇÃO: Múltiplas UBSs neste bairro. Selecione a correta...</option>`;
-                    unidades.forEach(ubs => {
-                        htmlSelect += `<option value="${ubs}">${ubs}</option>`;
-                    });
-                    htmlSelect += `</select>`;
-                    container.innerHTML = htmlSelect;
-                }
-            });
-        });
-
-        // GERAÇÃO DO PDF
         function gerarPDF() {
-            const paciente = document.getElementById('paciente').value;
-            const cns = document.getElementById('cns').value || "Não informado";
-            const nasc = document.getElementById('nascimento').value || "___/___/_____";
+            const nome = document.getElementById('paciente').value;
             const bairro = document.getElementById('bairro').value;
-            
-            // Verifica se o campo ubs-encontrada existe e pega o valor (seja ele input ou select)
-            const campoUbs = document.getElementById('ubs-encontrada');
-            const ubs = campoUbs ? campoUbs.value : "";
-            
-            const cid = document.getElementById('cid').value;
-            const resumo = document.getElementById('resumo').value;
-            const medicacoes = document.getElementById('medicacoes').value || "Sem medicações relatadas.";
-            const plano = document.getElementById('plano').value;
+            const ubs = document.getElementById('ubs-encontrada').value;
+            const historia = document.getElementById('historia').value;
 
-            if(!paciente || !bairro || !ubs || !resumo || !cid || !plano) {
-                alert("Por favor, preencha todos os campos obrigatórios (incluindo selecionar a UBS correta) antes de gerar o documento.");
+            if(!nome || !bairro || !historia) {
+                alert("Por favor, preencha todos os campos antes de gerar o documento.");
                 return;
             }
 
-            document.getElementById('print-paciente').innerText = paciente;
-            document.getElementById('print-cns').innerText = cns;
-            document.getElementById('print-nasc').innerText = nasc; 
+            document.getElementById('print-paciente').innerText = nome;
             document.getElementById('print-bairro').innerText = bairro;
             document.getElementById('print-ubs').innerText = ubs;
-            document.getElementById('print-cid').innerText = cid;
-            document.getElementById('print-resumo').innerText = resumo;
-            document.getElementById('print-medicacoes').innerText = medicacoes;
-            document.getElementById('print-plano').innerText = plano;
+            document.getElementById('print-historia').innerText = historia;
 
             window.print();
         }
