@@ -50,19 +50,11 @@
             transition: opacity 0.2s;
         }
         button:hover { opacity: 0.8; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.7; }
         
         .btn-principal { background-color: #28a745; margin-top: 20px;}
         .btn-voltar { background-color: #6c757d; }
         .btn-alterar { background-color: #ffc107; color: #333; }
-        
-        /* Botão da IA */
-        .btn-ia { 
-            background: linear-gradient(45deg, #6b21a8, #9333ea); 
-            margin-top: 10px; 
-            padding: 10px; 
-            font-size: 14px;
-        }
-        .btn-ia:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .loading { color: #005c99; font-size: 14px; display: none; margin-top: 5px;}
 
@@ -241,9 +233,7 @@
         <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
         <textarea id="historia" rows="6" placeholder="Ex: pcte 45a dor peito 3 dias, ECG nl, referenciado UBS..."></textarea>
         
-        <button id="btn-ia" class="btn-ia" onclick="melhorarTextoComIA()" title="A IA vai ler suas palavras-chave e transformar num resumo clínico estruturado.">✨ Expandir e Melhorar texto com IA</button>
-
-        <button class="btn-principal" onclick="irParaRevisao()">📄 Avançar para Revisão</button>
+        <button id="btn-avancar" class="btn-principal" onclick="irParaRevisao()">📄 Avançar para Revisão</button>
     </div>
 
     <div class="container" id="tela-preview">
@@ -255,7 +245,7 @@
             <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
             <p><strong>Unidade de Destino:</strong> <span id="rev-ubs" style="color: #d9534f; font-weight: bold;"></span></p>
             
-            <label for="rev-historia">História Clínica / Conduta (Pode ser editada aqui):</label>
+            <label for="rev-historia">História Clínica / Conduta (Melhorada por IA):</label>
             <textarea id="rev-historia" rows="8"></textarea>
         </div>
 
@@ -291,14 +281,14 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v1.0.0 - CG IA Edition
+            v2.0.0 - CG IA Automática
         </div>
     </div>
 
     <script>
         // ==========================================
         // CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
-        // =========================================
+        // ==========================================
         const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias'; 
 
         // BANCO DE DADOS (UBSF)
@@ -412,26 +402,8 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // INTEGRAÇÃO COM A API DO GEMINI
-        async function melhorarTextoComIA() {
-            if (GEMINI_API_KEY === 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias') {
-                alert("Você precisa configurar a sua chave de API do Gemini no código-fonte primeiro!");
-                return;
-            }
-
-            const campoHistoria = document.getElementById('historia');
-            const textoOriginal = campoHistoria.value.trim();
-
-            if (!textoOriginal) {
-                alert("Digite algumas palavras-chave sobre o paciente primeiro!");
-                return;
-            }
-
-            const btnIA = document.getElementById('btn-ia');
-            btnIA.innerText = "⏳ A IA está escrevendo o resumo...";
-            btnIA.disabled = true;
-
-            // Prompt estruturado para guiar a IA
+        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS
+        async function melhorarTextoComIA(textoOriginal) {
             const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
             Regras estritas: 
             1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
@@ -447,27 +419,29 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptMestre }] }]
+                        contents: [{ parts: [{ text: promptMestre }] }],
+                        // DESLIGA OS FILTROS DE SEGURANÇA QUE BLOQUEIAM TERMOS CLÍNICOS E ANATÔMICOS
+                        safetySettings: [
+                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" }
+                        ]
                     })
                 });
 
                 const data = await response.json();
 
                 if (data.candidates && data.candidates.length > 0) {
-                    const textoGerado = data.candidates[0].content.parts[0].text;
-                    // Substitui o texto da caixa pelo texto gerado
-                    campoHistoria.value = textoGerado.trim();
+                    return data.candidates[0].content.parts[0].text.trim();
                 } else {
-                    console.error("Erro na resposta da API:", data);
-                    alert("A IA não conseguiu processar o texto. Tente novamente.");
+                    console.warn("A IA falhou em processar o texto ou bloqueou internamente. Retornando original.");
+                    return textoOriginal; // Se falhar, usa o original do médico
                 }
 
             } catch (error) {
-                console.error("Falha na requisição:", error);
-                alert("Erro de conexão com a IA. Verifique sua internet ou a validade da API Key.");
-            } finally {
-                btnIA.innerText = "✨ Expandir e Melhorar texto com IA";
-                btnIA.disabled = false;
+                console.error("Falha na requisição da API Gemini:", error);
+                return textoOriginal; // Se a internet cair, usa o original
             }
         }
 
@@ -550,25 +524,43 @@
             }
         }
 
-        // TELAS E BOTÕES
-        function irParaRevisao() {
+        // NAVEGAÇÃO E AÇÃO DO BOTÃO "AVANÇAR" COM IA EMBUTIDA
+        async function irParaRevisao() {
             const nome = document.getElementById('paciente').value;
             const rua = document.getElementById('rua').value;
             const bairro = document.getElementById('bairro').value;
             const ubs = document.getElementById('ubs-encontrada').value;
-            const historia = document.getElementById('historia').value;
+            const historiaOriginal = document.getElementById('historia').value.trim();
 
-            if(!nome || !bairro || !historia || !ubs) {
+            if(!nome || !bairro || !historiaOriginal || !ubs) {
                 alert("Por favor, preencha pelo menos o Nome do Paciente, Bairro (para localizar a UBS) e a História Clínica.");
                 return;
             }
 
+            const btnAvancar = document.getElementById('btn-avancar');
+            const textoOriginalBtn = btnAvancar.innerText;
+            
+            // Trava o botão e avisa que está rodando
+            btnAvancar.innerText = "⏳ Estruturando texto com IA...";
+            btnAvancar.disabled = true;
+
+            // Chama a Inteligência Artificial e espera
+            const historiaMelhorada = await melhorarTextoComIA(historiaOriginal);
+
+            // Destrava o botão
+            btnAvancar.innerText = textoOriginalBtn;
+            btnAvancar.disabled = false;
+
+            // Joga os dados pra tela de revisão
             document.getElementById('rev-paciente').innerText = nome;
             let enderecoCompleto = rua ? `${rua}, Bairro/Conjunto: ${bairro}` : `Bairro/Conjunto: ${bairro}`;
             document.getElementById('rev-endereco').innerText = enderecoCompleto;
             document.getElementById('rev-ubs').innerText = ubs;
-            document.getElementById('rev-historia').value = historia;
+            
+            // Joga o texto melhorado pela IA
+            document.getElementById('rev-historia').value = historiaMelhorada;
 
+            // Troca de tela
             document.getElementById('tela-formulario').style.display = "none";
             document.getElementById('tela-preview').style.display = "block";
         }
