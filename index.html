@@ -51,9 +51,18 @@
         }
         button:hover { opacity: 0.8; }
         
-        .btn-principal { background-color: #28a745; }
+        .btn-principal { background-color: #28a745; margin-top: 20px;}
         .btn-voltar { background-color: #6c757d; }
         .btn-alterar { background-color: #ffc107; color: #333; }
+        
+        /* Botão da IA */
+        .btn-ia { 
+            background: linear-gradient(45deg, #6b21a8, #9333ea); 
+            margin-top: 10px; 
+            padding: 10px; 
+            font-size: 14px;
+        }
+        .btn-ia:disabled { opacity: 0.6; cursor: not-allowed; }
 
         .loading { color: #005c99; font-size: 14px; display: none; margin-top: 5px;}
 
@@ -65,91 +74,36 @@
            CONFIGURAÇÃO DE IMPRESSÃO (PDF)
            ========================================= */
         @media print {
-            @page {
-                size: A4;
-                margin: 0;
-            }
-            body { 
-                margin: 0; 
-                padding: 0; 
-                background: white;
-            }
+            @page { size: A4; margin: 0; }
+            body { margin: 0; padding: 0; background: white; }
             body * { visibility: hidden; }
             .container { display: none !important; }
 
-            #documento-oficial, #documento-oficial * { 
-                visibility: visible; 
-            }
+            #documento-oficial, #documento-oficial * { visibility: visible; }
 
             #documento-oficial {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+                position: absolute; left: 0; top: 0; width: 100%;
                 padding: 2.5cm 2.5cm 2.5cm 3cm; 
                 box-sizing: border-box;
                 font-family: 'Times New Roman', Times, serif;
-                font-size: 12pt;
-                color: black;
-                display: block;
+                font-size: 12pt; color: black; display: block;
             }
 
-            .cabecalho { 
-                text-align: center; 
-                border-bottom: 2px solid black; 
-                padding-bottom: 15px; 
-                margin-bottom: 30px; 
-            }
+            .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 30px; }
             .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; color: black; }
             .cabecalho h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
             .cabecalho p { font-size: 12pt; margin: 10px 0; font-weight: bold; letter-spacing: 1px; }
 
-            .campo-impresso { 
-                margin-bottom: 25px; 
-                font-size: 13pt;
-                line-height: 1.6;
-            }
-
+            .campo-impresso { margin-bottom: 25px; font-size: 13pt; line-height: 1.6; }
             strong { font-weight: bold; }
+            hr { margin: 30px 0; border: 0; border-top: 1px solid #000; }
 
-            hr { 
-                margin: 30px 0; 
-                border: 0; 
-                border-top: 1px solid #000; 
-            }
+            #print-historia { text-align: justify; min-height: 100px; white-space: pre-wrap; }
 
-            #print-historia {
-                text-align: justify;
-                min-height: 100px;
-                white-space: pre-wrap;
-            }
-
-            .assinatura { 
-                margin-top: 100px; 
-                text-align: center; 
-                border-top: 1px solid black; 
-                width: 60%; 
-                margin-left: auto; 
-                margin-right: auto; 
-                padding-top: 10px; 
-            }
+            .assinatura { margin-top: 100px; text-align: center; border-top: 1px solid black; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; }
             
-            .rodape-sis {
-                position: fixed;
-                bottom: 1cm;
-                left: 0;
-                width: 100%;
-                text-align: center;
-                font-size: 9pt;
-                color: #555;
-            }
-            .versao-canto {
-                position: fixed;
-                bottom: 1cm;
-                right: 2cm; 
-                font-size: 8pt;
-                color: #ccc;
-            }
+            .rodape-sis { position: fixed; bottom: 1cm; left: 0; width: 100%; text-align: center; font-size: 9pt; color: #555; }
+            .versao-canto { position: fixed; bottom: 1cm; right: 2cm; font-size: 8pt; color: #ccc; }
         }
     </style>
 </head>
@@ -285,7 +239,9 @@
         <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold; color: #d9534f;">
 
         <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
-        <textarea id="historia" rows="6" placeholder="Descreva o quadro clínico, tratamento realizado na urgência e orientações..."></textarea>
+        <textarea id="historia" rows="6" placeholder="Ex: pcte 45a dor peito 3 dias, ECG nl, referenciado UBS..."></textarea>
+        
+        <button id="btn-ia" class="btn-ia" onclick="melhorarTextoComIA()" title="A IA vai ler suas palavras-chave e transformar num resumo clínico estruturado.">✨ Expandir e Melhorar texto com IA</button>
 
         <button class="btn-principal" onclick="irParaRevisao()">📄 Avançar para Revisão</button>
     </div>
@@ -335,12 +291,18 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v0.6.0 - Correção Busca Inteligente
+            v1.0.0 - CG IA Edition
         </div>
     </div>
 
     <script>
-        // BANCO DE DADOS ATUALIZADO 
+        // ==========================================
+        // 🚨 CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
+        // ==========================================
+        // Substitua 'SUA_CHAVE_AQUI' pela sua API Key do Google Gemini
+        const GEMINI_API_KEY = 'SUA_CHAVE_AQUI'; 
+
+        // BANCO DE DADOS (UBSF)
         const baseDeDados = {
             "Acácio Figueiredo (Catingueira)": "UBSF Acácio Figueiredo",
             "Alto Branco": "UBSF Alto Branco",
@@ -451,7 +413,66 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // 1. BUSCA DE CEP VIA API COM PRIORIDADE DE EXATIDÃO
+        // INTEGRAÇÃO COM A API DO GEMINI
+        async function melhorarTextoComIA() {
+            if (GEMINI_API_KEY === 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias') {
+                alert("Você precisa configurar a sua chave de API do Gemini no código-fonte primeiro!");
+                return;
+            }
+
+            const campoHistoria = document.getElementById('historia');
+            const textoOriginal = campoHistoria.value.trim();
+
+            if (!textoOriginal) {
+                alert("Digite algumas palavras-chave sobre o paciente primeiro!");
+                return;
+            }
+
+            const btnIA = document.getElementById('btn-ia');
+            btnIA.innerText = "⏳ A IA está escrevendo o resumo...";
+            btnIA.disabled = true;
+
+            // Prompt estruturado para guiar a IA
+            const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
+            Regras estritas: 
+            1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
+            2. Corrija abreviações para os termos médicos corretos. 
+            3. O texto deve ser corrido, profissional e em um único parágrafo ou tópicos curtos.
+            
+            Anotações do médico: ${textoOriginal}`;
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptMestre }] }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const textoGerado = data.candidates[0].content.parts[0].text;
+                    // Substitui o texto da caixa pelo texto gerado
+                    campoHistoria.value = textoGerado.trim();
+                } else {
+                    console.error("Erro na resposta da API:", data);
+                    alert("A IA não conseguiu processar o texto. Tente novamente.");
+                }
+
+            } catch (error) {
+                console.error("Falha na requisição:", error);
+                alert("Erro de conexão com a IA. Verifique sua internet ou a validade da API Key.");
+            } finally {
+                btnIA.innerText = "✨ Expandir e Melhorar texto com IA";
+                btnIA.disabled = false;
+            }
+        }
+
+        // BUSCA CEP
         async function buscarCEP() {
             let cepInput = document.getElementById('cep').value;
             let cep = cepInput.replace(/\D/g, ''); 
@@ -482,20 +503,16 @@
                             for (let i = 1; i < selectBairro.options.length; i++) {
                                 let optionText = selectBairro.options[i].text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-                                // 1. Prioriza achar o bairro EXATO primeiro (ex: "Presidente Médici" == "Presidente Médici")
                                 if (optionText === apiBairro) {
                                     indiceExato = i;
                                     break; 
-                                } 
-                                // 2. Se não for exato, guarda o match parcial para usar se não achar o exato
-                                else if (indiceExato === -1 && (optionText.includes(apiBairro) || apiBairro.includes(optionText))) {
+                                } else if (indiceExato === -1 && (optionText.includes(apiBairro) || apiBairro.includes(optionText))) {
                                     if (indiceParcial === -1) {
                                         indiceParcial = i; 
                                     }
                                 }
                             }
 
-                            // Aplica o resultado
                             if (indiceExato !== -1) {
                                 selectBairro.selectedIndex = indiceExato;
                                 bairroEncontrado = true;
@@ -527,7 +544,6 @@
         function localizarUBS() {
             const bairroSelecionado = document.getElementById('bairro').value;
             const campoUBS = document.getElementById('ubs-encontrada');
-            
             if (bairroSelecionado && baseDeDados[bairroSelecionado]) {
                 campoUBS.value = baseDeDados[bairroSelecionado];
             } else {
@@ -535,7 +551,7 @@
             }
         }
 
-        // 2. NAVEGAÇÃO DE TELAS (IR PARA REVISÃO)
+        // TELAS E BOTÕES
         function irParaRevisao() {
             const nome = document.getElementById('paciente').value;
             const rua = document.getElementById('rua').value;
@@ -549,10 +565,8 @@
             }
 
             document.getElementById('rev-paciente').innerText = nome;
-            
             let enderecoCompleto = rua ? `${rua}, Bairro/Conjunto: ${bairro}` : `Bairro/Conjunto: ${bairro}`;
             document.getElementById('rev-endereco').innerText = enderecoCompleto;
-            
             document.getElementById('rev-ubs').innerText = ubs;
             document.getElementById('rev-historia').value = historia;
 
@@ -560,7 +574,6 @@
             document.getElementById('tela-preview').style.display = "block";
         }
 
-        // 3. AÇÕES DOS BOTÕES DA REVISÃO
         function voltarParaForm() {
             document.getElementById('historia').value = document.getElementById('rev-historia').value;
             document.getElementById('tela-preview').style.display = "none";
