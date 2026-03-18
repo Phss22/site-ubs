@@ -74,11 +74,9 @@
                 padding: 0; 
                 background: white;
             }
-            /* Esconde a tela do sistema (formulário e preview) */
             body * { visibility: hidden; }
             .container { display: none !important; }
 
-            /* Mostra apenas o documento oficial */
             #documento-oficial, #documento-oficial * { 
                 visibility: visible; 
             }
@@ -88,7 +86,6 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                /* MARGENS ABNT CENTRALIZADAS */
                 padding: 2.5cm 2.5cm 2.5cm 3cm; 
                 box-sizing: border-box;
                 font-family: 'Times New Roman', Times, serif;
@@ -257,9 +254,10 @@
             <option value="Portal de Campina (Três Irmãs)">Portal de Campina (Três Irmãs)</option>
             <option value="Portal Sudoeste (Três Irmãs)">Portal Sudoeste (Três Irmãs)</option>
             <option value="Prata">Prata</option>
+            <option value="Presidente Médici">Presidente Médici</option>
             <option value="Quarenta">Quarenta</option>
             <option value="Ramadinha (I e II)">Ramadinha (I e II)</option>
-            <option value="Ressurreição 1">Ressurreição 1</option>
+            <option value="Ressurreição 1 (Acácio Figueiredo e Presidente Médici)">Ressurreição 1 (Acácio Figueiredo e Presidente Médici)</option>
             <option value="Ressurreição 2">Ressurreição 2</option>
             <option value="Rocha Cavalcante (Três Irmãs)">Rocha Cavalcante (Três Irmãs)</option>
             <option value="Rosa Cruz (Cruzeiro)">Rosa Cruz (Cruzeiro)</option>
@@ -337,12 +335,12 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v0.5.0 - CG Completa + Distritos
+            v0.6.0 - Correção Busca Inteligente
         </div>
     </div>
 
     <script>
-        // BANCO DE DADOS ATUALIZADO - CAMPINA GRANDE (PB) MEGA COMPLETO
+        // BANCO DE DADOS ATUALIZADO 
         const baseDeDados = {
             "Acácio Figueiredo (Catingueira)": "UBSF Acácio Figueiredo",
             "Alto Branco": "UBSF Alto Branco",
@@ -426,9 +424,10 @@
             "Portal de Campina (Três Irmãs)": "UBSF Três Irmãs",
             "Portal Sudoeste (Três Irmãs)": "UBSF Portal Sudoeste",
             "Prata": "Centro de Saúde da Prata",
+            "Presidente Médici": "UBSF Presidente Médici",
             "Quarenta": "UBSF Quarenta",
             "Ramadinha (I e II)": "UBSF Ramadinha",
-            "Ressurreição 1": "UBSF Ressurreição",
+            "Ressurreição 1 (Acácio Figueiredo e Presidente Médici)": "UBSF Ressurreição",
             "Ressurreição 2": "UBSF Ressurreição 2",
             "Rocha Cavalcante (Três Irmãs)": "UBSF Rocha Cavalcante",
             "Rosa Cruz (Cruzeiro)": "UBSF Rosa Cruz",
@@ -452,7 +451,7 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // 1. BUSCA DE CEP VIA API (TURBINADA)
+        // 1. BUSCA DE CEP VIA API COM PRIORIDADE DE EXATIDÃO
         async function buscarCEP() {
             let cepInput = document.getElementById('cep').value;
             let cep = cepInput.replace(/\D/g, ''); 
@@ -476,15 +475,33 @@
                         
                         if (data.bairro) {
                             let apiBairro = data.bairro.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+                            
+                            let indiceExato = -1;
+                            let indiceParcial = -1;
 
                             for (let i = 1; i < selectBairro.options.length; i++) {
                                 let optionText = selectBairro.options[i].text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-                                if (optionText === apiBairro || optionText.includes(apiBairro) || apiBairro.includes(optionText)) {
-                                    selectBairro.selectedIndex = i;
-                                    bairroEncontrado = true;
-                                    break;
+                                // 1. Prioriza achar o bairro EXATO primeiro (ex: "Presidente Médici" == "Presidente Médici")
+                                if (optionText === apiBairro) {
+                                    indiceExato = i;
+                                    break; 
+                                } 
+                                // 2. Se não for exato, guarda o match parcial para usar se não achar o exato
+                                else if (indiceExato === -1 && (optionText.includes(apiBairro) || apiBairro.includes(optionText))) {
+                                    if (indiceParcial === -1) {
+                                        indiceParcial = i; 
+                                    }
                                 }
+                            }
+
+                            // Aplica o resultado
+                            if (indiceExato !== -1) {
+                                selectBairro.selectedIndex = indiceExato;
+                                bairroEncontrado = true;
+                            } else if (indiceParcial !== -1) {
+                                selectBairro.selectedIndex = indiceParcial;
+                                bairroEncontrado = true;
                             }
                         }
                         
