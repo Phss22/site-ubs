@@ -372,7 +372,9 @@
 
         // 1. BUSCA DE CEP VIA API
         async function buscarCEP() {
-            let cep = document.getElementById('cep').value.replace(/\D/g, '');
+            let cepInput = document.getElementById('cep').value;
+            let cep = cepInput.replace(/\D/g, ''); // Tira o traço e deixa só números
+            
             if (cep.length === 8) {
                 document.getElementById('loading-cep').style.display = "block";
                 try {
@@ -380,36 +382,50 @@
                     let data = await response.json();
                     
                     if (!data.erro) {
-                        document.getElementById('rua').value = data.logradouro;
+                        // 1. Preenche a rua (se os Correios retornarem)
+                        if (data.logradouro) {
+                            document.getElementById('rua').value = data.logradouro;
+                        } else {
+                            document.getElementById('rua').value = ""; // Limpa se for CEP geral
+                            alert("Esse parece ser um CEP geral da cidade. A rua e o bairro precisam ser preenchidos manualmente.");
+                        }
                         
                         let selectBairro = document.getElementById('bairro');
                         let bairroEncontrado = false;
                         
-                        for (let i = 0; i < selectBairro.options.length; i++) {
-                            // Ignora acentos e converte pra minúsculo na comparação pra evitar erros da API
-                            let optionText = selectBairro.options[i].text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-                            let apiBairro = data.bairro.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                        // 2. Tenta casar o bairro se os Correios retornarem algum
+                        if (data.bairro) {
+                            let apiBairro = data.bairro.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
-                            if (optionText === apiBairro || optionText.includes(apiBairro)) {
-                                selectBairro.selectedIndex = i;
-                                bairroEncontrado = true;
-                                break;
+                            // Começa do índice 1 para ignorar a opção "Selecione um bairro..."
+                            for (let i = 1; i < selectBairro.options.length; i++) {
+                                let optionText = selectBairro.options[i].text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+                                // Verifica se um nome contém o outro (ex: "Jardim Paulistano" e "Rosa Cruz (Jardim Paulistano)")
+                                if (optionText === apiBairro || optionText.includes(apiBairro) || apiBairro.includes(optionText)) {
+                                    selectBairro.selectedIndex = i;
+                                    bairroEncontrado = true;
+                                    break;
+                                }
                             }
                         }
                         
-                        localizarUBS();
+                        localizarUBS(); // Atualiza a caixinha vermelha da UBS
                         
-                        if (!bairroEncontrado) {
-                            alert(`Bairro "${data.bairro}" retornado pelo CEP não casou automaticamente. Por favor, selecione o bairro correspondente na lista.`);
+                        if (!bairroEncontrado && data.bairro) {
+                            alert(`O CEP achou o bairro "${data.bairro}", mas ele não casou com a nossa lista. Por favor, escolha a opção mais próxima no menu de Bairros.`);
                         }
                     } else {
-                        alert("CEP não encontrado.");
+                        alert("⚠️ CEP não encontrado. Verifique se os números estão corretos.");
                     }
                 } catch (error) {
+                    alert("⚠️ Erro de conexão ao buscar o CEP. O sistema dos Correios pode estar instável.");
                     console.error("Erro na busca de CEP", error);
                 } finally {
                     document.getElementById('loading-cep').style.display = "none";
                 }
+            } else if (cep.length > 0 && cep.length < 8) {
+                alert("⚠️ O CEP está incompleto. Ele precisa ter 8 números.");
             }
         }
 
