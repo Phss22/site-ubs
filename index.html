@@ -22,7 +22,7 @@
             border-radius: 10px; 
             box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
         }
-        h1 { color: #005c99; text-align: center; }
+        h1, h2 { color: #005c99; text-align: center; }
         label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
         select, textarea, input { 
             width: 100%; 
@@ -33,41 +33,50 @@
             font-size: 16px; 
             box-sizing: border-box;
         }
+        .botoes-acao {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
         button { 
-            background-color: #28a745; 
             color: white; 
-            padding: 15px 30px; 
+            padding: 15px; 
             border: none; 
             border-radius: 5px; 
             cursor: pointer; 
-            font-size: 18px; 
-            margin-top: 20px; 
+            font-size: 16px; 
             width: 100%; 
             font-weight: bold;
+            transition: opacity 0.2s;
         }
-        button:hover { background-color: #218838; }
+        button:hover { opacity: 0.8; }
+        
+        .btn-principal { background-color: #28a745; }
+        .btn-voltar { background-color: #6c757d; }
+        .btn-alterar { background-color: #ffc107; color: #333; }
 
-        /* Área do documento oficial (Fica invisível na tela normal) */
+        .loading { color: #005c99; font-size: 14px; display: none; margin-top: 5px;}
+
+        /* Telas */
+        #tela-preview { display: none; }
         #documento-oficial { display: none; }
 
         /* =========================================
-           CONFIGURAÇÃO DE IMPRESSÃO (PDF CORRIGIDO)
+           CONFIGURAÇÃO DE IMPRESSÃO (PDF)
            ========================================= */
         @media print {
             @page {
                 size: A4;
                 margin: 0;
             }
-            
             body { 
                 margin: 0; 
                 padding: 0; 
                 background: white;
             }
-
-            /* Esconde a tela do sistema */
+            /* Esconde a tela do sistema (formulário e preview) */
             body * { visibility: hidden; }
-            .container { display: none; }
+            .container { display: none !important; }
 
             /* Mostra apenas o documento oficial */
             #documento-oficial, #documento-oficial * { 
@@ -82,7 +91,6 @@
                 /* MARGENS ABNT CENTRALIZADAS */
                 padding: 2.5cm 2.5cm 2.5cm 3cm; 
                 box-sizing: border-box;
-                
                 font-family: 'Times New Roman', Times, serif;
                 font-size: 12pt;
                 color: black;
@@ -95,8 +103,7 @@
                 padding-bottom: 15px; 
                 margin-bottom: 30px; 
             }
-            
-            .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; }
+            .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; color: black; }
             .cabecalho h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
             .cabecalho p { font-size: 12pt; margin: 10px 0; font-weight: bold; letter-spacing: 1px; }
 
@@ -117,6 +124,7 @@
             #print-historia {
                 text-align: justify;
                 min-height: 100px;
+                white-space: pre-wrap; /* Mantém as quebras de linha digitadas */
             }
 
             .assinatura { 
@@ -129,7 +137,6 @@
                 padding-top: 10px; 
             }
             
-            /* Rodapé Centralizado */
             .rodape-sis {
                 position: fixed;
                 bottom: 1cm;
@@ -139,12 +146,10 @@
                 font-size: 9pt;
                 color: #555;
             }
-
-            /* Versão no cantinho direito */
             .versao-canto {
                 position: fixed;
                 bottom: 1cm;
-                right: 2cm; /* Alinhado com a margem direita */
+                right: 2cm; 
                 font-size: 8pt;
                 color: #ccc;
             }
@@ -153,11 +158,21 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="tela-formulario">
         <h1>🏥 Sistema de Encaminhamento</h1>
-        <p>Selecione o bairro do paciente para localizar a UBS de referência.</p>
+        <p>Preencha os dados do paciente para localizar a UBS e gerar a contrarreferência.</p>
 
-        <label for="bairro">Bairro de Residência:</label>
+        <label for="paciente">Nome do Paciente:</label>
+        <input type="text" id="paciente" placeholder="Nome completo">
+
+        <label for="cep">CEP (Opcional - Preenche Rua e Bairro sozinhos):</label>
+        <input type="text" id="cep" placeholder="00000-000" onblur="buscarCEP()" maxlength="9">
+        <div id="loading-cep" class="loading">Buscando endereço...</div>
+
+        <label for="rua">Rua / Logradouro:</label>
+        <input type="text" id="rua" placeholder="Nome da rua, número, complemento...">
+
+        <label for="bairro">Bairro de Residência (Obrigatório):</label>
         <select id="bairro" onchange="localizarUBS()">
             <option value="">Selecione um bairro...</option>
             <option value="Água Branca">Água Branca</option>
@@ -193,15 +208,32 @@
         </select>
 
         <label for="ubs-encontrada">Unidade Básica de Saúde (UBS) de Referência:</label>
-        <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold;">
-
-        <label for="paciente">Nome do Paciente:</label>
-        <input type="text" id="paciente" placeholder="Nome completo">
+        <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold; color: #d9534f;">
 
         <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
         <textarea id="historia" rows="6" placeholder="Descreva o quadro clínico, tratamento realizado na urgência e orientações..."></textarea>
 
-        <button onclick="gerarPDF()">📄 Gerar Documento PDF</button>
+        <button class="btn-principal" onclick="irParaRevisao()">📄 Avançar para Revisão</button>
+    </div>
+
+    <div class="container" id="tela-preview">
+        <h2>Revisão do Encaminhamento</h2>
+        <p>Revise os dados antes de gerar o documento finalizado para o paciente.</p>
+
+        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ccc;">
+            <p><strong>Paciente:</strong> <span id="rev-paciente"></span></p>
+            <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
+            <p><strong>UBS de Destino:</strong> <span id="rev-ubs" style="color: #d9534f; font-weight: bold;"></span></p>
+            
+            <label for="rev-historia">História Clínica / Conduta (Pode ser editada aqui):</label>
+            <textarea id="rev-historia" rows="8"></textarea>
+        </div>
+
+        <div class="botoes-acao">
+            <button class="btn-voltar" onclick="voltarParaForm()">⬅️ Voltar</button>
+            <button class="btn-alterar" onclick="alterarDescricao()">✏️ Alterar Descrição</button>
+            <button class="btn-principal" onclick="confirmarEImprimir()">🖨️ Confirmar e Imprimir</button>
+        </div>
     </div>
 
     <div id="documento-oficial">
@@ -212,7 +244,7 @@
         </div>
         
         <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
-        <div class="campo-impresso"><strong>Bairro de Residência:</strong> <br> <span id="print-bairro"></span></div>
+        <div class="campo-impresso"><strong>Endereço Residencial:</strong> <br> <span id="print-endereco"></span></div>
         <div class="campo-impresso"><strong>Unidade de Destino (UBS):</strong> <br> <span id="print-ubs"></span></div>
         
         <hr>
@@ -229,12 +261,12 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v0.1.0
+            v0.2.0
         </div>
     </div>
 
     <script>
-        // BANCO DE DADOS ATUALIZADO (Fontes: CNES e Prefeitura de Vitória)
+        // BANCO DE DADOS ATUALIZADO
         const baseDeDados = {
             "Água Branca": "USF Água Branca",
             "Alto José Leal": "USF Alto José Leal",
@@ -268,6 +300,49 @@
             "Universitário": "USF Universitário / Lídia Queiroz II"
         };
 
+        // 1. BUSCA DE CEP VIA API
+        async function buscarCEP() {
+            let cep = document.getElementById('cep').value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                document.getElementById('loading-cep').style.display = "block";
+                try {
+                    let response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                    let data = await response.json();
+                    
+                    if (!data.erro) {
+                        document.getElementById('rua').value = data.logradouro;
+                        
+                        // Tenta encontrar o bairro correspondente no select
+                        let selectBairro = document.getElementById('bairro');
+                        let bairroEncontrado = false;
+                        
+                        for (let i = 0; i < selectBairro.options.length; i++) {
+                            // Comparação ignorando maiúsculas/minúsculas
+                            if (selectBairro.options[i].text.toLowerCase() === data.bairro.toLowerCase() || 
+                                selectBairro.options[i].text.toLowerCase().includes(data.bairro.toLowerCase())) {
+                                selectBairro.selectedIndex = i;
+                                bairroEncontrado = true;
+                                break;
+                            }
+                        }
+                        
+                        // Atualiza a UBS independente de ter achado automático ou não
+                        localizarUBS();
+                        
+                        if (!bairroEncontrado) {
+                            alert(`Bairro "${data.bairro}" retornado pelo CEP não mapeado automaticamente. Por favor, selecione o bairro correspondente na lista.`);
+                        }
+                    } else {
+                        alert("CEP não encontrado.");
+                    }
+                } catch (error) {
+                    console.error("Erro na busca de CEP", error);
+                } finally {
+                    document.getElementById('loading-cep').style.display = "none";
+                }
+            }
+        }
+
         function localizarUBS() {
             const bairroSelecionado = document.getElementById('bairro').value;
             const campoUBS = document.getElementById('ubs-encontrada');
@@ -279,22 +354,69 @@
             }
         }
 
-        function gerarPDF() {
+        // 2. NAVEGAÇÃO DE TELAS (IR PARA REVISÃO)
+        function irParaRevisao() {
             const nome = document.getElementById('paciente').value;
+            const rua = document.getElementById('rua').value;
             const bairro = document.getElementById('bairro').value;
             const ubs = document.getElementById('ubs-encontrada').value;
             const historia = document.getElementById('historia').value;
 
-            if(!nome || !bairro || !historia) {
-                alert("Por favor, preencha todos os campos antes de gerar o documento.");
+            if(!nome || !bairro || !historia || !ubs) {
+                alert("Por favor, preencha pelo menos o Nome do Paciente, Bairro (para localizar a UBS) e a História Clínica.");
                 return;
             }
 
-            document.getElementById('print-paciente').innerText = nome;
-            document.getElementById('print-bairro').innerText = bairro;
-            document.getElementById('print-ubs').innerText = ubs;
-            document.getElementById('print-historia').innerText = historia;
+            // Popula os dados na tela de revisão
+            document.getElementById('rev-paciente').innerText = nome;
+            
+            // Monta o endereço combinando Rua e Bairro
+            let enderecoCompleto = rua ? `${rua}, Bairro: ${bairro}` : `Bairro: ${bairro}`;
+            document.getElementById('rev-endereco').innerText = enderecoCompleto;
+            
+            document.getElementById('rev-ubs').innerText = ubs;
+            document.getElementById('rev-historia').value = historia;
 
+            // Troca de tela
+            document.getElementById('tela-formulario').style.display = "none";
+            document.getElementById('tela-preview').style.display = "block";
+        }
+
+        // 3. AÇÕES DOS BOTÕES DA REVISÃO
+        function voltarParaForm() {
+            // Se o médico alterou a história na revisão, salva de volta no formulário
+            document.getElementById('historia').value = document.getElementById('rev-historia').value;
+            
+            // Troca de tela
+            document.getElementById('tela-preview').style.display = "none";
+            document.getElementById('tela-formulario').style.display = "block";
+        }
+
+        function alterarDescricao() {
+            // Dá o foco no textarea da tela de revisão para o médico digitar
+            const areaTexto = document.getElementById('rev-historia');
+            areaTexto.focus();
+            
+            // Coloca o cursor no final do texto
+            const val = areaTexto.value;
+            areaTexto.value = '';
+            areaTexto.value = val;
+        }
+
+        function confirmarEImprimir() {
+            // Pega os dados validados na tela de revisão
+            const nome = document.getElementById('rev-paciente').innerText;
+            const endereco = document.getElementById('rev-endereco').innerText;
+            const ubs = document.getElementById('rev-ubs').innerText;
+            const historiaFinal = document.getElementById('rev-historia').value;
+
+            // Joga para o formato de Impressão (documento-oficial)
+            document.getElementById('print-paciente').innerText = nome;
+            document.getElementById('print-endereco').innerText = endereco;
+            document.getElementById('print-ubs').innerText = ubs;
+            document.getElementById('print-historia').innerText = historiaFinal;
+
+            // Chama a caixa de diálogo de impressão do navegador
             window.print();
         }
     </script>
