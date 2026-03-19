@@ -281,15 +281,16 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v2.0.0 - CG IA Automática
+            v3.0.0 - Debugger Ativado
         </div>
     </div>
 
     <script>
         // ==========================================
-        // CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
+        // 🚨 CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
         // ==========================================
-        const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias'; 
+        // APAGUE E COLOQUE SUA NOVA CHAVE AQUI DENTRO DAS ASPAS:
+        const GEMINI_API_KEY = 'COLOQUE_SUA_NOVA_CHAVE_AQUI'; 
 
         // BANCO DE DADOS (UBSF)
         const baseDeDados = {
@@ -402,8 +403,13 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS
+        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS (COM AVISOS DE ERRO LIGADOS)
         async function melhorarTextoComIA(textoOriginal) {
+            if (GEMINI_API_KEY === 'COLOQUE_SUA_NOVA_CHAVE_AQUI') {
+                alert("❌ ERRO: Você esqueceu de colocar sua API Key nova no código!");
+                return textoOriginal;
+            }
+
             const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
             Regras estritas: 
             1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
@@ -432,16 +438,22 @@
 
                 const data = await response.json();
 
+                // 🚨 SE O GOOGLE RETORNAR ERRO (CHAVE REVOGADA, ETC), O ALERTA APARECE AQUI:
+                if (!response.ok) {
+                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Erro desconhecido. Verifique sua API Key."));
+                    return textoOriginal;
+                }
+
                 if (data.candidates && data.candidates.length > 0) {
                     return data.candidates[0].content.parts[0].text.trim();
                 } else {
-                    console.warn("A IA falhou em processar o texto ou bloqueou internamente. Retornando original.");
-                    return textoOriginal; // Se falhar, usa o original do médico
+                    alert("⚠️ A IA rodou, mas o Google bloqueou a resposta por segurança. O texto original será mantido.");
+                    return textoOriginal; 
                 }
 
             } catch (error) {
-                console.error("Falha na requisição da API Gemini:", error);
-                return textoOriginal; // Se a internet cair, usa o original
+                alert("❌ ERRO NO SISTEMA:\nNão foi possível conectar à internet ou à IA. Erro: " + error.message);
+                return textoOriginal; 
             }
         }
 
@@ -557,7 +569,7 @@
             document.getElementById('rev-endereco').innerText = enderecoCompleto;
             document.getElementById('rev-ubs').innerText = ubs;
             
-            // Joga o texto melhorado pela IA
+            // Joga o texto (melhorado ou o original em caso de falha)
             document.getElementById('rev-historia').value = historiaMelhorada;
 
             // Troca de tela
