@@ -281,7 +281,7 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v3.1.0 - IA Totalmente Destravada
+            v3.2.0 - Gemini 2.5 Atualizado
         </div>
     </div>
 
@@ -402,8 +402,13 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS (SEM TRAVAS MENTIROSAS AGORA)
+        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS
         async function melhorarTextoComIA(textoOriginal) {
+            if (GEMINI_API_KEY === 'COLOQUE_SUA_NOVA_CHAVE_AQUI') {
+                alert("❌ ERRO: Você esqueceu de colocar sua API Key nova no código!");
+                return textoOriginal;
+            }
+
             const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
             Regras estritas: 
             1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
@@ -413,7 +418,8 @@
             Anotações do médico: ${textoOriginal}`;
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`;
+                // AQUI ESTÁ O SEGREDO: O NOME DO MODELO FOI ATUALIZADO PARA gemini-2.5-flash
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                 
                 const response = await fetch(url, {
                     method: 'POST',
@@ -431,9 +437,8 @@
 
                 const data = await response.json();
 
-                // SE O GOOGLE DER ERRO, VAI AVISAR AQUI EM VEZ DE FINGIR
                 if (!response.ok) {
-                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Sua chave vazou e foi revogada. Gere outra!"));
+                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Erro desconhecido. Verifique sua API Key."));
                     return textoOriginal;
                 }
 
@@ -548,7 +553,6 @@
             btnAvancar.innerText = "⏳ Estruturando texto com IA...";
             btnAvancar.disabled = true;
 
-            // Chama a IA (agora vai estourar um alert se der pau)
             const historiaMelhorada = await melhorarTextoComIA(historiaOriginal);
 
             btnAvancar.innerText = textoOriginalBtn;
