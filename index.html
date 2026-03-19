@@ -102,7 +102,7 @@
 <body>
 
     <div class="container" id="tela-formulario">
-        <h1>🏥 Sistema de Encaminhamento - PMCG</h1>
+        <h1>🏥 Sistema de Encaminhamento</h1>
         <p>Preencha os dados do paciente para localizar a UBSF e gerar a contrarreferência.</p>
 
         <label for="paciente">Nome do Paciente:</label>
@@ -409,11 +409,11 @@
                 return textoOriginal;
             }
 
-            const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
-            Regras estritas: 
-            1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
-            2. Corrija abreviações para os termos médicos corretos. 
-            3. O texto deve ser corrido, profissional e em um único parágrafo ou tópicos curtos.
+            const promptMestre = `Reescreva as anotações médicas abaixo para que fiquem com um português correto, profissional e com boa fluidez. 
+            REGRAS ABSOLUTAS: 
+            1. APENAS corrija erros ortográficos, melhore a pontuação e expanda abreviações médicas comuns (ex: "pcte" para "paciente", "PA" para "Pressão Arterial").
+            2. NÃO INVENTE, não deduza e não adicione NENHUM diagnóstico, sintoma, remédio ou dado que não esteja no texto original.
+            3. NÃO use saudações (como "Olá"), não coloque títulos, não faça introduções nem comentários finais. Devolva EXATAMENTE E APENAS o texto clínico arrumado.
             
             Anotações do médico: ${textoOriginal}`;
 
