@@ -281,7 +281,7 @@
             Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
         </div>
         <div class="versao-canto">
-            v3.0.0 - Debugger Ativado
+            v3.1.0 - IA Totalmente Destravada
         </div>
     </div>
 
@@ -289,7 +289,6 @@
         // ==========================================
         // 🚨 CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
         // ==========================================
-        // APAGUE E COLOQUE SUA NOVA CHAVE AQUI DENTRO DAS ASPAS:
         const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias'; 
 
         // BANCO DE DADOS (UBSF)
@@ -403,13 +402,8 @@
             "Vila Olímpia (Cuités)": "UBSF Cuités"
         };
 
-        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS (COM AVISOS DE ERRO LIGADOS)
+        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS (SEM TRAVAS MENTIROSAS AGORA)
         async function melhorarTextoComIA(textoOriginal) {
-            if (GEMINI_API_KEY === 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias') {
-                alert("❌ ERRO: Você esqueceu de colocar sua API Key nova no código!");
-                return textoOriginal;
-            }
-
             const promptMestre = `Atue como um médico assistente. Transforme as seguintes palavras-chave ou anotações breves em um resumo clínico formal, claro, coeso e objetivo para um documento de encaminhamento e contrarreferência do SUS. 
             Regras estritas: 
             1. NÃO invente dados médicos, sintomas, medicações ou idades que não foram fornecidos nas notas. 
@@ -426,7 +420,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         contents: [{ parts: [{ text: promptMestre }] }],
-                        // DESLIGA OS FILTROS DE SEGURANÇA QUE BLOQUEIAM TERMOS CLÍNICOS E ANATÔMICOS
                         safetySettings: [
                             { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
                             { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
@@ -438,9 +431,9 @@
 
                 const data = await response.json();
 
-                // 🚨 SE O GOOGLE RETORNAR ERRO (CHAVE REVOGADA, ETC), O ALERTA APARECE AQUI:
+                // SE O GOOGLE DER ERRO, VAI AVISAR AQUI EM VEZ DE FINGIR
                 if (!response.ok) {
-                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Erro desconhecido. Verifique sua API Key."));
+                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Sua chave vazou e foi revogada. Gere outra!"));
                     return textoOriginal;
                 }
 
@@ -552,27 +545,22 @@
             const btnAvancar = document.getElementById('btn-avancar');
             const textoOriginalBtn = btnAvancar.innerText;
             
-            // Trava o botão e avisa que está rodando
             btnAvancar.innerText = "⏳ Estruturando texto com IA...";
             btnAvancar.disabled = true;
 
-            // Chama a Inteligência Artificial e espera
+            // Chama a IA (agora vai estourar um alert se der pau)
             const historiaMelhorada = await melhorarTextoComIA(historiaOriginal);
 
-            // Destrava o botão
             btnAvancar.innerText = textoOriginalBtn;
             btnAvancar.disabled = false;
 
-            // Joga os dados pra tela de revisão
             document.getElementById('rev-paciente').innerText = nome;
             let enderecoCompleto = rua ? `${rua}, Bairro/Conjunto: ${bairro}` : `Bairro/Conjunto: ${bairro}`;
             document.getElementById('rev-endereco').innerText = enderecoCompleto;
             document.getElementById('rev-ubs').innerText = ubs;
             
-            // Joga o texto (melhorado ou o original em caso de falha)
             document.getElementById('rev-historia').value = historiaMelhorada;
 
-            // Troca de tela
             document.getElementById('tela-formulario').style.display = "none";
             document.getElementById('tela-preview').style.display = "block";
         }
