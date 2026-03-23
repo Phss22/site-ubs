@@ -1,0 +1,114 @@
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background: white;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .container {
+    display: none !important;
+  }
+
+  #documento-oficial,
+  #documento-oficial * {
+    visibility: visible;
+  }
+
+  #documento-oficial {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: block;
+    padding: 2.5cm 2.5cm 2.5cm 3cm;
+    box-sizing: border-box;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 12pt;
+    color: black;
+    background: white;
+  }
+
+  .cabecalho {
+    text-align: center;
+    border-bottom: 2px solid black;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+  }
+
+  .cabecalho h2 {
+    margin: 5px 0;
+    font-size: 16pt;
+    color: black;
+    text-transform: uppercase;
+  }
+
+  .cabecalho h3 {
+    margin: 5px 0;
+    font-size: 14pt;
+    font-weight: normal;
+  }
+
+  .cabecalho p {
+    margin: 10px 0;
+    font-size: 12pt;
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .campo-impresso {
+    margin-bottom: 25px;
+    font-size: 13pt;
+    line-height: 1.6;
+  }
+
+  strong {
+    font-weight: bold;
+  }
+
+  hr {
+    margin: 30px 0;
+    border: 0;
+    border-top: 1px solid #000;
+  }
+
+  #print-historia {
+    min-height: 100px;
+    text-align: justify;
+    white-space: pre-wrap;
+  }
+
+  .assinatura {
+    width: 60%;
+    margin: 100px auto 0;
+    padding-top: 10px;
+    text-align: center;
+    border-top: 1px solid black;
+  }
+
+  .rodape-sis {
+    position: fixed;
+    bottom: 1cm;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 9pt;
+    color: #555;
+  }
+
+  .versao-canto {
+    position: fixed;
+    bottom: 1cm;
+    right: 2cm;
+    font-size: 8pt;
+    color: #ccc;
+  }
+}

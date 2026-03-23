@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Contrarreferência - SUS Campina Grande</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
+</head>
+<body>
+  <main class="app">
+    <section class="container" id="tela-formulario">
+      <header class="page-header">
+        <h1>🏥 Sistema de Encaminhamento</h1>
+        <p>Preencha os dados do paciente para localizar a UBSF e gerar a contrarreferência.</p>
+      </header>
+
+      <form id="form-encaminhamento">
+        <div class="form-group">
+          <label for="paciente">Nome do Paciente:</label>
+          <input type="text" id="paciente" name="paciente" placeholder="Nome completo">
+        </div>
+
+        <div class="form-group">
+          <label for="cep">CEP (Opcional - Preenche Rua e Bairro sozinhos):</label>
+          <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9">
+          <div id="loading-cep" class="loading">Buscando endereço...</div>
+        </div>
+
+        <div class="form-group">
+          <label for="rua">Rua / Logradouro:</label>
+          <input type="text" id="rua" name="rua" placeholder="Nome da rua, número, complemento...">
+        </div>
+
+        <div class="form-group">
+          <label for="bairro">Bairro/Conjunto de Residência (Obrigatório):</label>
+          <select id="bairro" name="bairro">
+            <option value="">Selecione um bairro ou conjunto...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="ubs-encontrada">Unidade de Saúde de Referência:</label>
+          <input
+            type="text"
+            id="ubs-encontrada"
+            name="ubs-encontrada"
+            class="campo-readonly campo-destaque"
+            readonly
+            placeholder="Aguardando seleção do bairro..."
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
+          <textarea id="historia" name="historia" rows="6" placeholder="Ex: pcte 45a dor peito 3 dias, ECG nl, referenciado UBS..."></textarea>
+        </div>
+
+        <button type="button" id="btn-avancar" class="btn-principal">
+          📄 Avançar para Revisão
+        </button>
+      </form>
+    </section>
+
+    <section class="container" id="tela-preview">
+      <header class="page-header">
+        <h2>Revisão do Encaminhamento</h2>
+        <p>Revise os dados antes de gerar o documento finalizado para o paciente.</p>
+      </header>
+
+      <div class="card-revisao">
+        <p><strong>Paciente:</strong> <span id="rev-paciente"></span></p>
+        <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
+        <p><strong>Unidade de Destino:</strong> <span id="rev-ubs" class="texto-destaque"></span></p>
+
+        <div class="form-group">
+          <label for="rev-historia">História Clínica / Conduta (Melhorada por IA):</label>
+          <textarea id="rev-historia" name="rev-historia" rows="8"></textarea>
+        </div>
+      </div>
+
+      <div class="botoes-acao">
+        <button type="button" class="btn-voltar" id="btn-voltar">⬅️ Voltar</button>
+        <button type="button" class="btn-alterar" id="btn-alterar">✏️ Alterar Descrição</button>
+        <button type="button" class="btn-principal" id="btn-imprimir">🖨️ Confirmar e Imprimir</button>
+      </div>
+    </section>
+
+    <section id="documento-oficial">
+      <div class="cabecalho">
+        <h2>PREFEITURA MUNICIPAL DE CAMPINA GRANDE</h2>
+        <h3>SECRETARIA MUNICIPAL DE SAÚDE</h3>
+        <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
+      </div>
+
+      <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
+      <div class="campo-impresso"><strong>Endereço Residencial:</strong> <br> <span id="print-endereco"></span></div>
+      <div class="campo-impresso"><strong>Unidade de Destino (UBSF/Centro de Saúde):</strong> <br> <span id="print-ubs"></span></div>
+
+      <hr>
+
+      <h3>Histórico Clínico e Conduta:</h3>
+      <div class="campo-impresso" id="print-historia"></div>
+
+      <div class="assinatura">
+        Assinatura e Carimbo do Médico<br>
+        Urgência/Emergência
+      </div>
+
+      <div class="rodape-sis">
+        Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
+      </div>
+
+      <div class="versao-canto">
+        v3.2.0
+      </div>
+    </section>
+  </main>
+
+  <script src="js/data.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
