@@ -1,601 +1,124 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Contrarreferência - SUS Campina Grande</title>
-    <style>
-        /* =========================================
-           ESTILO DA TELA (O que o médico vê no PC)
-           ========================================= */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #f0f2f5; 
-            margin: 0; 
-            padding: 20px; 
-        }
-        .container { 
-            max-width: 800px; 
-            margin: 0 auto; 
-            background: white; 
-            padding: 30px; 
-            border-radius: 10px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-        }
-        h1, h2 { color: #005c99; text-align: center; }
-        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
-        select, textarea, input { 
-            width: 100%; 
-            padding: 10px; 
-            margin-top: 5px; 
-            border: 1px solid #ccc; 
-            border-radius: 5px; 
-            font-size: 16px; 
-            box-sizing: border-box;
-        }
-        .botoes-acao {
-            display: flex;
-            gap: 15px;
-            margin-top: 25px;
-        }
-        button { 
-            color: white; 
-            padding: 15px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            width: 100%; 
-            font-weight: bold;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.8; }
-        button:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.7; }
-        
-        .btn-principal { background-color: #28a745; margin-top: 20px;}
-        .btn-voltar { background-color: #6c757d; }
-        .btn-alterar { background-color: #ffc107; color: #333; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Contrarreferência - SUS Campina Grande</title>
 
-        .loading { color: #005c99; font-size: 14px; display: none; margin-top: 5px;}
-
-        /* Telas */
-        #tela-preview { display: none; }
-        #documento-oficial { display: none; }
-
-        /* =========================================
-           CONFIGURAÇÃO DE IMPRESSÃO (PDF)
-           ========================================= */
-        @media print {
-            @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; background: white; }
-            body * { visibility: hidden; }
-            .container { display: none !important; }
-
-            #documento-oficial, #documento-oficial * { visibility: visible; }
-
-            #documento-oficial {
-                position: absolute; left: 0; top: 0; width: 100%;
-                padding: 2.5cm 2.5cm 2.5cm 3cm; 
-                box-sizing: border-box;
-                font-family: 'Times New Roman', Times, serif;
-                font-size: 12pt; color: black; display: block;
-            }
-
-            .cabecalho { text-align: center; border-bottom: 2px solid black; padding-bottom: 15px; margin-bottom: 30px; }
-            .cabecalho h2 { font-size: 16pt; margin: 5px 0; text-transform: uppercase; color: black; }
-            .cabecalho h3 { font-size: 14pt; margin: 5px 0; font-weight: normal; }
-            .cabecalho p { font-size: 12pt; margin: 10px 0; font-weight: bold; letter-spacing: 1px; }
-
-            .campo-impresso { margin-bottom: 25px; font-size: 13pt; line-height: 1.6; }
-            strong { font-weight: bold; }
-            hr { margin: 30px 0; border: 0; border-top: 1px solid #000; }
-
-            #print-historia { text-align: justify; min-height: 100px; white-space: pre-wrap; }
-
-            .assinatura { margin-top: 100px; text-align: center; border-top: 1px solid black; width: 60%; margin-left: auto; margin-right: auto; padding-top: 10px; }
-            
-            .rodape-sis { position: fixed; bottom: 1cm; left: 0; width: 100%; text-align: center; font-size: 9pt; color: #555; }
-            .versao-canto { position: fixed; bottom: 1cm; right: 2cm; font-size: 8pt; color: #ccc; }
-        }
-    </style>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/print.css" media="print">
 </head>
 <body>
-
-    <div class="container" id="tela-formulario">
+  <main class="app">
+    <section class="container" id="tela-formulario">
+      <header class="page-header">
         <h1>🏥 Sistema de Encaminhamento</h1>
         <p>Preencha os dados do paciente para localizar a UBSF e gerar a contrarreferência.</p>
+      </header>
 
-        <label for="paciente">Nome do Paciente:</label>
-        <input type="text" id="paciente" placeholder="Nome completo">
+      <form id="form-encaminhamento">
+        <div class="form-group">
+          <label for="paciente">Nome do Paciente:</label>
+          <input type="text" id="paciente" name="paciente" placeholder="Nome completo">
+        </div>
 
-        <label for="cep">CEP (Opcional - Preenche Rua e Bairro sozinhos):</label>
-        <input type="text" id="cep" placeholder="00000-000" onblur="buscarCEP()" maxlength="9">
-        <div id="loading-cep" class="loading">Buscando endereço...</div>
+        <div class="form-group">
+          <label for="cep">CEP (Opcional - Preenche Rua e Bairro sozinhos):</label>
+          <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9">
+          <div id="loading-cep" class="loading">Buscando endereço...</div>
+        </div>
 
-        <label for="rua">Rua / Logradouro:</label>
-        <input type="text" id="rua" placeholder="Nome da rua, número, complemento...">
+        <div class="form-group">
+          <label for="rua">Rua / Logradouro:</label>
+          <input type="text" id="rua" name="rua" placeholder="Nome da rua, número, complemento...">
+        </div>
 
-        <label for="bairro">Bairro/Conjunto de Residência (Obrigatório):</label>
-        <select id="bairro" onchange="localizarUBS()">
+        <div class="form-group">
+          <label for="bairro">Bairro/Conjunto de Residência (Obrigatório):</label>
+          <select id="bairro" name="bairro">
             <option value="">Selecione um bairro ou conjunto...</option>
-            <option value="Acácio Figueiredo (Catingueira)">Acácio Figueiredo (Catingueira)</option>
-            <option value="Alto Branco">Alto Branco</option>
-            <option value="Alto da Serra (Cuités)">Alto da Serra (Cuités)</option>
-            <option value="Altos de Campina (Cidades)">Altos de Campina (Cidades)</option>
-            <option value="Araxá">Araxá</option>
-            <option value="Bairro das Cidades">Bairro das Cidades</option>
-            <option value="Bairro das Nações">Bairro das Nações</option>
-            <option value="Bela Vista">Bela Vista</option>
-            <option value="Belo Monte (Nova Brasília)">Belo Monte (Nova Brasília)</option>
-            <option value="Bodocongó">Bodocongó</option>
-            <option value="Castelo Branco">Castelo Branco</option>
-            <option value="Catolé">Catolé</option>
-            <option value="Catolé de Zé Ferreira">Catolé de Zé Ferreira</option>
-            <option value="Centenário">Centenário</option>
-            <option value="Centro">Centro</option>
-            <option value="Colinas do Oeste">Colinas do Oeste</option>
-            <option value="Colinas do Sol (Malvinas)">Colinas do Sol (Malvinas)</option>
-            <option value="Complexo Aluizio Campos (Ligeiro)">Complexo Aluizio Campos (Ligeiro)</option>
-            <option value="Conceição">Conceição</option>
-            <option value="Conjunto Acácio Figueiredo (Três Irmãs)">Conjunto Acácio Figueiredo (Três Irmãs)</option>
-            <option value="Conjunto Chico Mendes (Malvinas)">Conjunto Chico Mendes (Malvinas)</option>
-            <option value="Conjunto Cinza (Três Irmãs)">Conjunto Cinza (Três Irmãs)</option>
-            <option value="Conjunto Irmãos Alexandrino">Conjunto Irmãos Alexandrino</option>
-            <option value="Conjunto Mariz (Malvinas)">Conjunto Mariz (Malvinas)</option>
-            <option value="Conjunto Pedro Gondim (Cidades)">Conjunto Pedro Gondim (Cidades)</option>
-            <option value="Conjunto Raimundo Suassuna (Três Irmãs)">Conjunto Raimundo Suassuna (Três Irmãs)</option>
-            <option value="Conjunto Ronaldo Cunha Lima (Três Irmãs)">Conjunto Ronaldo Cunha Lima (Três Irmãs)</option>
-            <option value="Conjunto Severino Cabral (Bodocongó)">Conjunto Severino Cabral (Bodocongó)</option>
-            <option value="Cruzeiro">Cruzeiro</option>
-            <option value="Cuités">Cuités</option>
-            <option value="Dinamérica">Dinamérica</option>
-            <option value="Distrito de Catolé">Distrito de Catolé</option>
-            <option value="Distrito dos Mecânicos (Jardim Paulistano)">Distrito dos Mecânicos (Jardim Paulistano)</option>
-            <option value="Distrito Industrial">Distrito Industrial</option>
-            <option value="Estação Velha">Estação Velha</option>
-            <option value="Galante">Galante</option>
-            <option value="Glória 1 (Nova Brasília)">Glória 1 (Nova Brasília)</option>
-            <option value="Glória 2 (Nova Brasília)">Glória 2 (Nova Brasília)</option>
-            <option value="Itararé">Itararé</option>
-            <option value="Jardim América (Nova Brasília)">Jardim América (Nova Brasília)</option>
-            <option value="Jardim Bellagio (Três Irmãs)">Jardim Bellagio (Três Irmãs)</option>
-            <option value="Jardim Borborema">Jardim Borborema</option>
-            <option value="Jardim Continental">Jardim Continental</option>
-            <option value="Jardim Europa (Nova Brasília)">Jardim Europa (Nova Brasília)</option>
-            <option value="Jardim Menezes">Jardim Menezes</option>
-            <option value="Jardim Paulistano">Jardim Paulistano</option>
-            <option value="Jardim Quarenta">Jardim Quarenta</option>
-            <option value="Jardim Tavares">Jardim Tavares</option>
-            <option value="Jardim Verdejante">Jardim Verdejante</option>
-            <option value="Jardim Vitória">Jardim Vitória</option>
-            <option value="Jardim Walnyza (Velame)">Jardim Walnyza (Velame)</option>
-            <option value="Jeremias">Jeremias</option>
-            <option value="José Pinheiro">José Pinheiro</option>
-            <option value="Juracy Palhano (Nações)">Juracy Palhano (Nações)</option>
-            <option value="Lauritzen">Lauritzen</option>
-            <option value="Liberdade">Liberdade</option>
-            <option value="Ligeiro">Ligeiro</option>
-            <option value="Loteamento Alameda (Serrotão)">Loteamento Alameda (Serrotão)</option>
-            <option value="Loteamento Altiplano Serra Rica (Cuités)">Loteamento Altiplano Serra Rica (Cuités)</option>
-            <option value="Loteamento Bento Figueiredo (Monte Santo/Univ.)">Loteamento Bento Figueiredo (Monte Santo/Univ.)</option>
-            <option value="Loteamento Grande Campina (Serrotão)">Loteamento Grande Campina (Serrotão)</option>
-            <option value="Loteamento João Paulo II (Ramadinha)">Loteamento João Paulo II (Ramadinha)</option>
-            <option value="Loteamento Portal dos Bosques (Serrotão)">Loteamento Portal dos Bosques (Serrotão)</option>
-            <option value="Louzeiro">Louzeiro</option>
-            <option value="Malvinas">Malvinas</option>
-            <option value="Marinho">Marinho</option>
-            <option value="Mirante">Mirante</option>
-            <option value="Monte Castelo">Monte Castelo</option>
-            <option value="Monte Santo">Monte Santo</option>
-            <option value="Mutirão do Serrotão">Mutirão do Serrotão</option>
-            <option value="Nova Brasília">Nova Brasília</option>
-            <option value="Novo Araxá">Novo Araxá</option>
-            <option value="Novo Bodocongó">Novo Bodocongó</option>
-            <option value="Novo Cruzeiro">Novo Cruzeiro</option>
-            <option value="Novo Horizonte">Novo Horizonte</option>
-            <option value="Palmeira">Palmeira</option>
-            <option value="Palmeira Imperial">Palmeira Imperial</option>
-            <option value="Pedregal">Pedregal</option>
-            <option value="Ponto Cem Réis">Ponto Cem Réis</option>
-            <option value="Portal de Campina (Três Irmãs)">Portal de Campina (Três Irmãs)</option>
-            <option value="Portal Sudoeste (Três Irmãs)">Portal Sudoeste (Três Irmãs)</option>
-            <option value="Prata">Prata</option>
-            <option value="Presidente Médici">Presidente Médici</option>
-            <option value="Quarenta">Quarenta</option>
-            <option value="Ramadinha (I e II)">Ramadinha (I e II)</option>
-            <option value="Ressurreição 1 (Acácio Figueiredo e Presidente Médici)">Ressurreição 1 (Acácio Figueiredo e Presidente Médici)</option>
-            <option value="Ressurreição 2">Ressurreição 2</option>
-            <option value="Rocha Cavalcante (Três Irmãs)">Rocha Cavalcante (Três Irmãs)</option>
-            <option value="Rosa Cruz (Cruzeiro)">Rosa Cruz (Cruzeiro)</option>
-            <option value="Sandra Cavalcante">Sandra Cavalcante</option>
-            <option value="Santa Cruz">Santa Cruz</option>
-            <option value="Santa Rosa">Santa Rosa</option>
-            <option value="Santa Terezinha">Santa Terezinha</option>
-            <option value="Santo Antônio">Santo Antônio</option>
-            <option value="São Januário (Bodocongó)">São Januário (Bodocongó)</option>
-            <option value="São José">São José</option>
-            <option value="São José da Mata">São José da Mata</option>
-            <option value="Serra da Borborema">Serra da Borborema</option>
-            <option value="Serrotão">Serrotão</option>
-            <option value="Sítio Estreito (I, II e III)">Sítio Estreito (I, II e III)</option>
-            <option value="Sítio Lucas (I e II)">Sítio Lucas (I e II)</option>
-            <option value="Tambor">Tambor</option>
-            <option value="Três Irmãs">Três Irmãs</option>
-            <option value="Universitário">Universitário</option>
-            <option value="Velame">Velame</option>
-            <option value="Vila dos Teimosos (Bodocongó)">Vila dos Teimosos (Bodocongó)</option>
-            <option value="Vila Olímpia (Cuités)">Vila Olímpia (Cuités)</option>
-        </select>
+          </select>
+        </div>
 
-        <label for="ubs-encontrada">Unidade de Saúde de Referência:</label>
-        <input type="text" id="ubs-encontrada" readonly placeholder="Aguardando seleção do bairro..." style="background-color: #e9ecef; font-weight: bold; color: #d9534f;">
+        <div class="form-group">
+          <label for="ubs-encontrada">Unidade de Saúde de Referência:</label>
+          <input
+            type="text"
+            id="ubs-encontrada"
+            name="ubs-encontrada"
+            class="campo-readonly campo-destaque"
+            readonly
+            placeholder="Aguardando seleção do bairro..."
+          >
+        </div>
 
-        <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
-        <textarea id="historia" rows="6" placeholder="Ex: pcte 45a dor peito 3 dias, ECG nl, referenciado UBS..."></textarea>
-        
-        <button id="btn-avancar" class="btn-principal" onclick="irParaRevisao()">📄 Avançar para Revisão</button>
-    </div>
+        <div class="form-group">
+          <label for="historia">História Clínica / Motivo do Encaminhamento:</label>
+          <textarea id="historia" name="historia" rows="6" placeholder="Ex: pcte 45a dor peito 3 dias, ECG nl, referenciado UBS..."></textarea>
+        </div>
 
-    <div class="container" id="tela-preview">
+        <button type="button" id="btn-avancar" class="btn-principal">
+          📄 Avançar para Revisão
+        </button>
+      </form>
+    </section>
+
+    <section class="container" id="tela-preview">
+      <header class="page-header">
         <h2>Revisão do Encaminhamento</h2>
         <p>Revise os dados antes de gerar o documento finalizado para o paciente.</p>
+      </header>
 
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; border: 1px solid #ccc;">
-            <p><strong>Paciente:</strong> <span id="rev-paciente"></span></p>
-            <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
-            <p><strong>Unidade de Destino:</strong> <span id="rev-ubs" style="color: #d9534f; font-weight: bold;"></span></p>
-            
-            <label for="rev-historia">História Clínica / Conduta (Melhorada por IA):</label>
-            <textarea id="rev-historia" rows="8"></textarea>
+      <div class="card-revisao">
+        <p><strong>Paciente:</strong> <span id="rev-paciente"></span></p>
+        <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
+        <p><strong>Unidade de Destino:</strong> <span id="rev-ubs" class="texto-destaque"></span></p>
+
+        <div class="form-group">
+          <label for="rev-historia">História Clínica / Conduta (Melhorada por IA):</label>
+          <textarea id="rev-historia" name="rev-historia" rows="8"></textarea>
         </div>
+      </div>
 
-        <div class="botoes-acao">
-            <button class="btn-voltar" onclick="voltarParaForm()">⬅️ Voltar</button>
-            <button class="btn-alterar" onclick="alterarDescricao()">✏️ Alterar Descrição</button>
-            <button class="btn-principal" onclick="confirmarEImprimir()">🖨️ Confirmar e Imprimir</button>
-        </div>
-    </div>
+      <div class="botoes-acao">
+        <button type="button" class="btn-voltar" id="btn-voltar">⬅️ Voltar</button>
+        <button type="button" class="btn-alterar" id="btn-alterar">✏️ Alterar Descrição</button>
+        <button type="button" class="btn-principal" id="btn-imprimir">🖨️ Confirmar e Imprimir</button>
+      </div>
+    </section>
 
-    <div id="documento-oficial">
-        <div class="cabecalho">
-            <h2>PREFEITURA MUNICIPAL DE CAMPINA GRANDE</h2>
-            <h3>SECRETARIA MUNICIPAL DE SAÚDE</h3>
-            <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
-        </div>
-        
-        <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
-        <div class="campo-impresso"><strong>Endereço Residencial:</strong> <br> <span id="print-endereco"></span></div>
-        <div class="campo-impresso"><strong>Unidade de Destino (UBSF/Centro de Saúde):</strong> <br> <span id="print-ubs"></span></div>
-        
-        <hr>
-        
-        <h3>Histórico Clínico e Conduta:</h3>
-        <div class="campo-impresso" id="print-historia"></div>
+    <section id="documento-oficial">
+      <div class="cabecalho">
+        <h2>PREFEITURA MUNICIPAL DE CAMPINA GRANDE</h2>
+        <h3>SECRETARIA MUNICIPAL DE SAÚDE</h3>
+        <p>CONTRARREFERÊNCIA / ENCAMINHAMENTO</p>
+      </div>
 
-        <div class="assinatura">
-            Assinatura e Carimbo do Médico<br>
-            Urgência/Emergência
-        </div>
-        
-        <div class="rodape-sis">
-            Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
-        </div>
-        <div class="versao-canto">
-            v3.2.0 - Gemini 2.5 Atualizado
-        </div>
-    </div>
+      <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
+      <div class="campo-impresso"><strong>Endereço Residencial:</strong> <br> <span id="print-endereco"></span></div>
+      <div class="campo-impresso"><strong>Unidade de Destino (UBSF/Centro de Saúde):</strong> <br> <span id="print-ubs"></span></div>
 
-    <script>
-        // ==========================================
-        // 🚨 CONFIGURAÇÃO DA INTELIGÊNCIA ARTIFICIAL
-        // ==========================================
-        const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias'; 
+      <hr>
 
-        // BANCO DE DADOS (UBSF)
-        const baseDeDados = {
-            "Acácio Figueiredo (Catingueira)": "UBSF Acácio Figueiredo",
-            "Alto Branco": "UBSF Alto Branco",
-            "Alto da Serra (Cuités)": "UBSF Cuités (Alto da Serra)",
-            "Altos de Campina (Cidades)": "UBSF Bairro das Cidades",
-            "Araxá": "UBSF Araxá",
-            "Bairro das Cidades": "UBSF Bairro das Cidades",
-            "Bairro das Nações": "UBSF Bairro das Nações",
-            "Bela Vista": "UBSF Bela Vista",
-            "Belo Monte (Nova Brasília)": "UBSF Nova Brasília (Belo Monte)",
-            "Bodocongó": "UBSF Bodocongó",
-            "Castelo Branco": "UBSF Castelo Branco",
-            "Catolé": "UBSF Catolé",
-            "Catolé de Zé Ferreira": "UBSF Catolé de Zé Ferreira",
-            "Centenário": "UBSF Centenário",
-            "Centro": "Centro de Saúde Francisco Pinto",
-            "Colinas do Oeste": "UBSF Colinas do Oeste",
-            "Colinas do Sol (Malvinas)": "UBSF Malvinas",
-            "Complexo Aluizio Campos (Ligeiro)": "UBSF Aluizio Campos",
-            "Conceição": "UBSF Conceição",
-            "Conjunto Acácio Figueiredo (Três Irmãs)": "UBSF Três Irmãs",
-            "Conjunto Chico Mendes (Malvinas)": "UBSF Chico Mendes",
-            "Conjunto Cinza (Três Irmãs)": "UBSF Conjunto Cinza",
-            "Conjunto Irmãos Alexandrino": "UBSF Irmãos Alexandrino",
-            "Conjunto Mariz (Malvinas)": "UBSF Malvinas",
-            "Conjunto Pedro Gondim (Cidades)": "UBSF Pedro Gondim",
-            "Conjunto Raimundo Suassuna (Três Irmãs)": "UBSF Raimundo Suassuna",
-            "Conjunto Ronaldo Cunha Lima (Três Irmãs)": "UBSF Ronaldo Cunha Lima",
-            "Conjunto Severino Cabral (Bodocongó)": "UBSF Severino Cabral",
-            "Cruzeiro": "UBSF Cruzeiro",
-            "Cuités": "UBSF Cuités",
-            "Dinamérica": "UBSF Dinamérica",
-            "Distrito de Catolé": "UBSF Distrito de Catolé",
-            "Distrito dos Mecânicos (Jardim Paulistano)": "UBSF Distrito dos Mecânicos",
-            "Distrito Industrial": "UBSF Distrito Industrial",
-            "Estação Velha": "UBSF Estação Velha",
-            "Galante": "UBSF Galante",
-            "Glória 1 (Nova Brasília)": "UBSF Nova Brasília (Glória)",
-            "Glória 2 (Nova Brasília)": "UBSF Nova Brasília (Glória)",
-            "Itararé": "UBSF Itararé",
-            "Jardim América (Nova Brasília)": "UBSF Nova Brasília",
-            "Jardim Bellagio (Três Irmãs)": "UBSF Três Irmãs",
-            "Jardim Borborema": "UBSF Jardim Borborema",
-            "Jardim Continental": "UBSF Jardim Continental",
-            "Jardim Europa (Nova Brasília)": "UBSF Nova Brasília",
-            "Jardim Menezes": "UBSF Jardim Menezes",
-            "Jardim Paulistano": "UBSF Jardim Paulistano",
-            "Jardim Quarenta": "UBSF Jardim Quarenta",
-            "Jardim Tavares": "UBSF Jardim Tavares",
-            "Jardim Verdejante": "UBSF Jardim Verdejante",
-            "Jardim Vitória": "UBSF Jardim Vitória",
-            "Jardim Walnyza (Velame)": "UBSF Velame",
-            "Jeremias": "UBSF Jeremias",
-            "José Pinheiro": "UBSF José Pinheiro",
-            "Juracy Palhano (Nações)": "UBSF Nações",
-            "Lauritzen": "UBSF Lauritzen",
-            "Liberdade": "UBSF Liberdade",
-            "Ligeiro": "UBSF Ligeiro",
-            "Loteamento Alameda (Serrotão)": "UBSF Serrotão",
-            "Loteamento Altiplano Serra Rica (Cuités)": "UBSF Cuités",
-            "Loteamento Bento Figueiredo (Monte Santo/Univ.)": "UBSF Bento Figueiredo",
-            "Loteamento Grande Campina (Serrotão)": "UBSF Serrotão",
-            "Loteamento João Paulo II (Ramadinha)": "UBSF Ramadinha",
-            "Loteamento Portal dos Bosques (Serrotão)": "UBSF Serrotão",
-            "Louzeiro": "UBSF Louzeiro",
-            "Malvinas": "UBSF Malvinas",
-            "Marinho": "UBSF Marinho",
-            "Mirante": "UBSF Mirante",
-            "Monte Castelo": "UBSF Monte Castelo",
-            "Monte Santo": "UBSF Monte Santo",
-            "Mutirão do Serrotão": "UBSF Mutirão do Serrotão",
-            "Nova Brasília": "UBSF Nova Brasília",
-            "Novo Araxá": "UBSF Novo Araxá",
-            "Novo Bodocongó": "UBSF Novo Bodocongó",
-            "Novo Cruzeiro": "UBSF Novo Cruzeiro",
-            "Novo Horizonte": "UBSF Novo Horizonte",
-            "Palmeira": "UBSF Palmeira",
-            "Palmeira Imperial": "UBSF Palmeira Imperial",
-            "Pedregal": "UBSF Pedregal",
-            "Ponto Cem Réis": "UBSF Ponto Cem Réis",
-            "Portal de Campina (Três Irmãs)": "UBSF Três Irmãs",
-            "Portal Sudoeste (Três Irmãs)": "UBSF Portal Sudoeste",
-            "Prata": "Centro de Saúde da Prata",
-            "Presidente Médici": "UBSF Presidente Médici",
-            "Quarenta": "UBSF Quarenta",
-            "Ramadinha (I e II)": "UBSF Ramadinha",
-            "Ressurreição 1 (Acácio Figueiredo e Presidente Médici)": "UBSF Ressurreição",
-            "Ressurreição 2": "UBSF Ressurreição 2",
-            "Rocha Cavalcante (Três Irmãs)": "UBSF Rocha Cavalcante",
-            "Rosa Cruz (Cruzeiro)": "UBSF Rosa Cruz",
-            "Sandra Cavalcante": "UBSF Sandra Cavalcante",
-            "Santa Cruz": "UBSF Santa Cruz",
-            "Santa Rosa": "UBSF Santa Rosa",
-            "Santa Terezinha": "UBSF Santa Terezinha",
-            "Santo Antônio": "UBSF Santo Antônio",
-            "São Januário (Bodocongó)": "UBSF Bodocongó",
-            "São José": "UBSF São José",
-            "São José da Mata": "UBSF São José da Mata",
-            "Serra da Borborema": "UBSF Serra da Borborema",
-            "Serrotão": "UBSF Serrotão",
-            "Sítio Estreito (I, II e III)": "UBSF Sítio Estreito",
-            "Sítio Lucas (I e II)": "UBSF Sítio Lucas",
-            "Tambor": "UBSF Tambor",
-            "Três Irmãs": "UBSF Três Irmãs",
-            "Universitário": "UBSF Universitário",
-            "Velame": "UBSF Velame",
-            "Vila dos Teimosos (Bodocongó)": "UBSF Bodocongó",
-            "Vila Olímpia (Cuités)": "UBSF Cuités"
-        };
+      <h3>Histórico Clínico e Conduta:</h3>
+      <div class="campo-impresso" id="print-historia"></div>
 
-        // FUNÇÃO QUE RODA A IA POR DEBAIXO DOS PANOS
-        async function melhorarTextoComIA(textoOriginal) {
-            if (GEMINI_API_KEY === 'COLOQUE_SUA_NOVA_CHAVE_AQUI') {
-                alert("❌ ERRO: Você esqueceu de colocar sua API Key nova no código!");
-                return textoOriginal;
-            }
+      <div class="assinatura">
+        Assinatura e Carimbo do Médico<br>
+        Urgência/Emergência
+      </div>
 
-            const promptMestre = `Reescreva as anotações médicas abaixo para que fiquem com um português correto, profissional e com boa fluidez. 
-            REGRAS ABSOLUTAS: 
-            1. APENAS corrija erros ortográficos, melhore a pontuação e expanda abreviações médicas comuns (ex: "pcte" para "paciente", "PA" para "Pressão Arterial").
-            2. NÃO INVENTE, não deduza e não adicione NENHUM diagnóstico, sintoma, remédio ou dado que não esteja no texto original.
-            3. NÃO use saudações (como "Olá"), não coloque títulos, não faça introduções nem comentários finais. Devolva EXATAMENTE E APENAS o texto clínico arrumado.
-            
-            Anotações do médico: ${textoOriginal}`;
+      <div class="rodape-sis">
+        Documento gerado eletronicamente pelo Sistema Integrado de Saúde.
+      </div>
 
-            try {
-                // AQUI ESTÁ O SEGREDO: O NOME DO MODELO FOI ATUALIZADO PARA gemini-2.5-flash
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-                
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptMestre }] }],
-                        safetySettings: [
-                            { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                            { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" }
-                        ]
-                    })
-                });
+      <div class="versao-canto">
+        v3.2.0
+      </div>
+    </section>
+  </main>
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    alert("❌ ERRO DA API DO GEMINI:\nO Google recusou o acesso. Detalhe do erro:\n" + (data.error?.message || "Erro desconhecido. Verifique sua API Key."));
-                    return textoOriginal;
-                }
-
-                if (data.candidates && data.candidates.length > 0) {
-                    return data.candidates[0].content.parts[0].text.trim();
-                } else {
-                    alert("⚠️ A IA rodou, mas o Google bloqueou a resposta por segurança. O texto original será mantido.");
-                    return textoOriginal; 
-                }
-
-            } catch (error) {
-                alert("❌ ERRO NO SISTEMA:\nNão foi possível conectar à internet ou à IA. Erro: " + error.message);
-                return textoOriginal; 
-            }
-        }
-
-        // BUSCA CEP
-        async function buscarCEP() {
-            let cepInput = document.getElementById('cep').value;
-            let cep = cepInput.replace(/\D/g, ''); 
-            
-            if (cep.length === 8) {
-                document.getElementById('loading-cep').style.display = "block";
-                try {
-                    let response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-                    let data = await response.json();
-                    
-                    if (!data.erro) {
-                        if (data.logradouro) {
-                            document.getElementById('rua').value = data.logradouro;
-                        } else {
-                            document.getElementById('rua').value = ""; 
-                            alert("Esse parece ser um CEP geral da cidade. A rua e o bairro precisam ser preenchidos manualmente.");
-                        }
-                        
-                        let selectBairro = document.getElementById('bairro');
-                        let bairroEncontrado = false;
-                        
-                        if (data.bairro) {
-                            let apiBairro = data.bairro.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-                            
-                            let indiceExato = -1;
-                            let indiceParcial = -1;
-
-                            for (let i = 1; i < selectBairro.options.length; i++) {
-                                let optionText = selectBairro.options[i].text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-
-                                if (optionText === apiBairro) {
-                                    indiceExato = i;
-                                    break; 
-                                } else if (indiceExato === -1 && (optionText.includes(apiBairro) || apiBairro.includes(optionText))) {
-                                    if (indiceParcial === -1) {
-                                        indiceParcial = i; 
-                                    }
-                                }
-                            }
-
-                            if (indiceExato !== -1) {
-                                selectBairro.selectedIndex = indiceExato;
-                                bairroEncontrado = true;
-                            } else if (indiceParcial !== -1) {
-                                selectBairro.selectedIndex = indiceParcial;
-                                bairroEncontrado = true;
-                            }
-                        }
-                        
-                        localizarUBS(); 
-                        
-                        if (!bairroEncontrado && data.bairro) {
-                            alert(`O CEP achou a área "${data.bairro}", mas ela não casou perfeitamente. Por favor, escolha a opção mais próxima no menu.`);
-                        }
-                    } else {
-                        alert("⚠️ CEP não encontrado. Verifique se os números estão corretos.");
-                    }
-                } catch (error) {
-                    alert("⚠️ Erro de conexão ao buscar o CEP. O sistema dos Correios pode estar instável.");
-                    console.error("Erro na busca de CEP", error);
-                } finally {
-                    document.getElementById('loading-cep').style.display = "none";
-                }
-            } else if (cep.length > 0 && cep.length < 8) {
-                alert("⚠️ O CEP está incompleto. Ele precisa ter 8 números.");
-            }
-        }
-
-        function localizarUBS() {
-            const bairroSelecionado = document.getElementById('bairro').value;
-            const campoUBS = document.getElementById('ubs-encontrada');
-            if (bairroSelecionado && baseDeDados[bairroSelecionado]) {
-                campoUBS.value = baseDeDados[bairroSelecionado];
-            } else {
-                campoUBS.value = "";
-            }
-        }
-
-        // NAVEGAÇÃO E AÇÃO DO BOTÃO "AVANÇAR" COM IA EMBUTIDA
-        async function irParaRevisao() {
-            const nome = document.getElementById('paciente').value;
-            const rua = document.getElementById('rua').value;
-            const bairro = document.getElementById('bairro').value;
-            const ubs = document.getElementById('ubs-encontrada').value;
-            const historiaOriginal = document.getElementById('historia').value.trim();
-
-            if(!nome || !bairro || !historiaOriginal || !ubs) {
-                alert("Por favor, preencha pelo menos o Nome do Paciente, Bairro (para localizar a UBS) e a História Clínica.");
-                return;
-            }
-
-            const btnAvancar = document.getElementById('btn-avancar');
-            const textoOriginalBtn = btnAvancar.innerText;
-            
-            btnAvancar.innerText = "⏳ Estruturando texto com IA...";
-            btnAvancar.disabled = true;
-
-            const historiaMelhorada = await melhorarTextoComIA(historiaOriginal);
-
-            btnAvancar.innerText = textoOriginalBtn;
-            btnAvancar.disabled = false;
-
-            document.getElementById('rev-paciente').innerText = nome;
-            let enderecoCompleto = rua ? `${rua}, Bairro/Conjunto: ${bairro}` : `Bairro/Conjunto: ${bairro}`;
-            document.getElementById('rev-endereco').innerText = enderecoCompleto;
-            document.getElementById('rev-ubs').innerText = ubs;
-            
-            document.getElementById('rev-historia').value = historiaMelhorada;
-
-            document.getElementById('tela-formulario').style.display = "none";
-            document.getElementById('tela-preview').style.display = "block";
-        }
-
-        function voltarParaForm() {
-            document.getElementById('historia').value = document.getElementById('rev-historia').value;
-            document.getElementById('tela-preview').style.display = "none";
-            document.getElementById('tela-formulario').style.display = "block";
-        }
-
-        function alterarDescricao() {
-            const areaTexto = document.getElementById('rev-historia');
-            areaTexto.focus();
-            const val = areaTexto.value;
-            areaTexto.value = '';
-            areaTexto.value = val;
-        }
-
-        function confirmarEImprimir() {
-            const nome = document.getElementById('rev-paciente').innerText;
-            const endereco = document.getElementById('rev-endereco').innerText;
-            const ubs = document.getElementById('rev-ubs').innerText;
-            const historiaFinal = document.getElementById('rev-historia').value;
-
-            document.getElementById('print-paciente').innerText = nome;
-            document.getElementById('print-endereco').innerText = endereco;
-            document.getElementById('print-ubs').innerText = ubs;
-            document.getElementById('print-historia').innerText = historiaFinal;
-
-            window.print();
-        }
-    </script>
+  <script src="js/data.js" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>

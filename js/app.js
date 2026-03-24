@@ -1,7 +1,9 @@
-/* =========================================
+/* =====================================================
    Futuramente colocar essa chave no backend
-   ========================================= */
-const GEMINI_API_KEY = 'COLOQUE_SUA_CHAVE_AQUI';
+   Chave Erick = AIzaSyDuT_Vd3e4nLEZDYPXYMKQKsaiWTB95geg
+   Chave Pedro = AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias
+   ===================================================== */
+const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias';
 
 const elementos = {
   paciente: document.getElementById('paciente'),
@@ -147,20 +149,37 @@ async function buscarCEP() {
 
 async function melhorarTextoComIA(textoOriginal) {
     if (!GEMINI_API_KEY || GEMINI_API_KEY === 'COLOQUE_SUA_CHAVE_AQUI') {
-    alert('❌ Coloque sua API Key da Gemini no app.js.');
+    alert('❌ Problemas com a API Key da Gemini no app.js.');
     return textoOriginal;
     }
 
     const promptMestre = `
-    Reescreva as anotações médicas abaixo para que fiquem com um português correto, profissional e com boa fluidez.
+      Reescreva a anotação abaixo em linguagem médica formal, técnica, objetiva e padronizada.
 
-    REGRAS ABSOLUTAS:
-    1. APENAS corrija erros ortográficos, melhore a pontuação e expanda abreviações médicas comuns (ex: "pcte" para "paciente", "PA" para "Pressão Arterial").
-    2. NÃO INVENTE, não deduza e não adicione NENHUM diagnóstico, sintoma, remédio ou dado que não esteja no texto original.
-    3. NÃO use saudações (como "Olá"), não coloque títulos, não faça introduções nem comentários finais.
-    4. Devolva EXATAMENTE E APENAS o texto clínico arrumado.
+      Sua função não é apenas corrigir ortografia, mas também padronizar a redação clínica.
 
-    Anotações do médico:
+      REGRAS:
+      1. Não invente nenhuma informação.
+      2. Não adicione hipótese diagnóstica, exame, conduta ou detalhe ausente.
+      3. Reorganize o conteúdo em ordem clínica padronizada.
+      4. Substitua termos coloquiais por terminologia médico-formal.
+      5. Mantenha o conteúdo fiel ao original, porém com redação mais técnica.
+      6. Use, sempre que possível, esta ordem:
+        a) sintoma ou queixa principal
+        b) sinais/achados objetivos
+        c) comorbidades ou condições referidas
+        d) medicações em uso
+        e) observações finais presentes no texto original
+      7. Tente manter o mesmo número de parágrafos, mas dê preferência a formalização.
+      8. Não use listas, títulos, comentários ou explicações.
+
+      Exemplos de formalização esperada:
+      - "dor no peito" → "dor torácica"
+      - "pressão normal" → "pressão arterial dentro da normalidade"
+      - "tem que tomar remédio sem parar" → "faz uso contínuo da medicação"
+      - "remédio para pressão" → "medicação anti-hipertensiva"
+
+    Texto original:
     ${textoOriginal}
     `.trim();
 
@@ -180,6 +199,11 @@ async function melhorarTextoComIA(textoOriginal) {
             ]
             }
         ],
+        generationConfig: {
+          temperature: 0.2, //diz o quão “ousada” será a escolha dentro desse grupo. Baixa (0.0 a 0.3), Média (0.4 a 0.8) e Alta (0.9+)
+          topP: 0.8,  //diz até onde vai o grupo das opções aceitáveis. mais restrito = 0.5, mais amplo = 0.8
+          topK: 20    //diz quantas opções entram no jogo. topK: 20 → o modelo só escolhe entre as 20 opções mais prováveis.
+        },
         safetySettings: [
             { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
             { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
