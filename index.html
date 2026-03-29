@@ -23,33 +23,47 @@
         </div>
 
         <div class="form-group">
-          <label for="cep">CEP (Opcional - Preenche Rua e Bairro sozinhos):</label>
-          <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9">
-          <div id="loading-cep" class="loading">Buscando endereço...</div>
+          <div class="campo-opcao">
+            <p class="campo-opcao-titulo">Encontre a UBS pelo:</p>
+            <p class="campo-opcao-subtitulo">Você pode informar o CEP ou selecionar diretamente o bairro.</p>
+
+            <div class="linha-opcoes">
+              <div class="coluna-opcao">
+                <label for="cep">CEP</label>
+                <input type="text" id="cep" name="cep" placeholder="00000-000" maxlength="9">
+                <div id="loading-cep" class="loading">Buscando endereço...</div>
+              </div>
+
+              <div class="coluna-opcao">
+                <label for="bairro">Bairro</label>
+                <select id="bairro" name="bairro">
+                  <option value="">Selecione...</option>
+                </select>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
-          <label for="rua">Rua / Logradouro:</label>
-          <input type="text" id="rua" name="rua" placeholder="Nome da rua, número, complemento...">
-        </div>
+          <label>Unidade de Saúde encontrada</label>
 
-        <div class="form-group">
-          <label for="bairro">Bairro/Conjunto de Residência (Obrigatório):</label>
-          <select id="bairro" name="bairro">
-            <option value="">Selecione um bairro ou conjunto...</option>
-          </select>
-        </div>
+          <div class="resultado-ubs" id="resultado-ubs">
+            <p class="resultado-ubs-status" id="ubs-status">
+              Aguardando seleção do CEP ou bairro...
+            </p>
 
-        <div class="form-group">
-          <label for="ubs-encontrada">Unidade de Saúde de Referência:</label>
-          <input
-            type="text"
-            id="ubs-encontrada"
-            name="ubs-encontrada"
-            class="campo-readonly campo-destaque"
-            readonly
-            placeholder="Aguardando seleção do bairro..."
-          >
+            <div class="resultado-ubs-info">
+              <div class="resultado-ubs-item">
+                <span class="resultado-ubs-label">UBS</span>
+                <strong id="ubs-encontrada">—</strong>
+              </div>
+
+              <div class="resultado-ubs-item">
+                <span class="resultado-ubs-label">ID da UBS</span>
+                <strong id="ubs-id">—</strong>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="form-group">
@@ -66,13 +80,13 @@
     <section class="container" id="tela-preview">
       <header class="page-header">
         <h2>Revisão do Encaminhamento</h2>
-        <p>Revise os dados antes de gerar o documento finalizado para o paciente.</p>
+        <p>É possíve alterar a descrição apenas clicando no campo abaixo. Após os ajustes, gere o documento finalizado para o paciente clicando em 'Confirmar e Imprimir'.</p>
       </header>
 
       <div class="card-revisao">
         <p><strong>Paciente:</strong> <span id="rev-paciente"></span></p>
-        <p><strong>Endereço:</strong> <span id="rev-endereco"></span></p>
         <p><strong>Unidade de Destino:</strong> <span id="rev-ubs" class="texto-destaque"></span></p>
+        <p><strong>ID da UBS:</strong> <span id="rev-ubs-id"></span></p>
 
         <div class="form-group">
           <label for="rev-historia">História Clínica / Conduta (Melhorada por IA):</label>
@@ -82,7 +96,6 @@
 
       <div class="botoes-acao">
         <button type="button" class="btn-voltar" id="btn-voltar">⬅️ Voltar</button>
-        <button type="button" class="btn-alterar" id="btn-alterar">✏️ Alterar Descrição</button>
         <button type="button" class="btn-principal" id="btn-imprimir">🖨️ Confirmar e Imprimir</button>
       </div>
     </section>
@@ -95,8 +108,15 @@
       </div>
 
       <div class="campo-impresso"><strong>Paciente:</strong> <br> <span id="print-paciente"></span></div>
-      <div class="campo-impresso"><strong>Endereço Residencial:</strong> <br> <span id="print-endereco"></span></div>
-      <div class="campo-impresso"><strong>Unidade de Destino (UBSF/Centro de Saúde):</strong> <br> <span id="print-ubs"></span></div>
+      <div class="campo-impresso">
+        <strong>Unidade de Destino (UBSF/Centro de Saúde):</strong> <br>
+        <span id="print-ubs"></span>
+      </div>
+
+      <div class="campo-impresso">
+        <strong>ID da UBS:</strong> <br>
+        <span id="print-ubs-id"></span>
+      </div>
 
       <hr>
 

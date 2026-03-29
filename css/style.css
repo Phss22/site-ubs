@@ -27,8 +27,13 @@ body {
   margin: 0;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--cor-fundo);
   color: var(--cor-texto);
+  background-color: #eef3f7;
+  background-image:
+    radial-gradient(circle at top left, rgba(0, 92, 153, 0.18) 0%, transparent 35%),
+    radial-gradient(circle at bottom right, rgba(40, 167, 69, 0.14) 0%, transparent 30%),
+    linear-gradient(135deg, #f4f8fb 0%, #eaf1f6 100%);
+  background-attachment: fixed;
 }
 
 input,
@@ -48,10 +53,11 @@ button {
 .container {
   max-width: 800px;
   margin: 0 auto;
-  background: var(--cor-branca);
+  background: rgba(255, 255, 255, 0.98);
   padding: 30px;
   border-radius: var(--raio);
-  box-shadow: var(--sombra);
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.10);
+  border: 1px solid rgba(0, 92, 153, 0.08);
 }
 
 .page-header h1,
@@ -129,11 +135,6 @@ button:disabled {
   background-color: var(--cor-secundaria);
 }
 
-.btn-alterar {
-  background-color: var(--cor-alerta);
-  color: var(--cor-texto);
-}
-
 #btn-avancar {
   margin-top: 20px;
 }
@@ -151,7 +152,101 @@ button:disabled {
 /* =========================================
    TELAS
    ========================================= */
-#tela-preview,
-#documento-oficial {
-  display: none;
+   #tela-preview,
+   #documento-oficial {
+     display: none;
+    }
+
+/* =========================================
+    CEP OU BAIRRO
+  ========================================= */
+
+.campo-opcao {
+  background-color: #f8f9fa;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 18px;
+  margin-top: 10px;
+}
+
+.campo-opcao-titulo {
+  margin: 0;
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--cor-primaria);
+}
+
+.campo-opcao-subtitulo {
+  margin: 6px 0 15px;
+  font-size: 14px;
+  color: #666;
+}
+
+.linha-opcoes {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .linha-opcoes {
+    flex-direction: column;
+  }
+}
+
+.coluna-opcao {
+  flex: 1;
+}
+
+.coluna-opcao label {
+  margin-top: 0;
+}
+
+/* =========================================
+    RESULTADO DA BUSCA DA UBS
+  ========================================= */
+
+
+.resultado-ubs {
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background-color: #f8f9fa;
+}
+
+.resultado-ubs-status {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.resultado-ubs-info {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.resultado-ubs-item {
+  flex: 1;
+  min-width: 180px;
+}
+
+.resultado-ubs-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
+}
+
+.resultado-ubs-item strong {
+  font-size: 18px;
+  color: var(--cor-primaria);
+}
+
+.resultado-ubs--ativo {
+  border-color: var(--cor-primaria);
+  background-color: #eef6fc;
 }

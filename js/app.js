@@ -8,9 +8,11 @@ const GEMINI_API_KEY = 'AIzaSyDJZE4pDd6wF1U__6DGbTFGeXxDzhyXias';
 const elementos = {
   paciente: document.getElementById('paciente'),
   cep: document.getElementById('cep'),
-  rua: document.getElementById('rua'),
   bairro: document.getElementById('bairro'),
+  resultadoUbs: document.getElementById('resultado-ubs'),
+  ubsStatus: document.getElementById('ubs-status'),
   ubsEncontrada: document.getElementById('ubs-encontrada'),
+  ubsId: document.getElementById('ubs-id'),
   historia: document.getElementById('historia'),
   btnAvancar: document.getElementById('btn-avancar'),
 
@@ -18,24 +20,23 @@ const elementos = {
   telaPreview: document.getElementById('tela-preview'),
 
   revPaciente: document.getElementById('rev-paciente'),
-  revEndereco: document.getElementById('rev-endereco'),
   revUbs: document.getElementById('rev-ubs'),
+  revUbsId: document.getElementById('rev-ubs-id'),
   revHistoria: document.getElementById('rev-historia'),
 
   btnVoltar: document.getElementById('btn-voltar'),
-  btnAlterar: document.getElementById('btn-alterar'),
   btnImprimir: document.getElementById('btn-imprimir'),
 
   printPaciente: document.getElementById('print-paciente'),
-  printEndereco: document.getElementById('print-endereco'),
   printUbs: document.getElementById('print-ubs'),
+  printUbsId: document.getElementById('print-ubs-id'),
   printHistoria: document.getElementById('print-historia'),
 
   loadingCep: document.getElementById('loading-cep')
 };
 
 function preencherBairros() {
-  elementos.bairro.innerHTML = '<option value="">Selecione um bairro ou conjunto...</option>';
+  elementos.bairro.innerHTML = '<option value="">Selecione um bairro...</option>';
 
   const bairros = Object.keys(baseDeDados).sort((a, b) => a.localeCompare(b, 'pt-BR'));
 
@@ -49,7 +50,19 @@ function preencherBairros() {
 
 function localizarUBS() {
   const bairroSelecionado = elementos.bairro.value;
-  elementos.ubsEncontrada.value = baseDeDados[bairroSelecionado] || '';
+  const dadosUBS = baseDeDados[bairroSelecionado];
+
+  if (dadosUBS) {
+    elementos.ubsEncontrada.innerText = dadosUBS.nome;
+    elementos.ubsId.innerText = dadosUBS.id;
+    elementos.ubsStatus.innerText = 'UBS localizada com sucesso.';
+    elementos.resultadoUbs.classList.add('resultado-ubs--ativo');
+  } else {
+    elementos.ubsEncontrada.innerText = '—';
+    elementos.ubsId.innerText = '—';
+    elementos.ubsStatus.innerText = 'Aguardando seleção do CEP ou bairro.';
+    elementos.resultadoUbs.classList.remove('resultado-ubs--ativo');
+  }
 }
 
 function mostrarTela(idTela) {
@@ -94,13 +107,6 @@ async function buscarCEP() {
     if (data.erro) {
       alert('⚠️ CEP não encontrado. Verifique se os números estão corretos.');
       return;
-    }
-
-    if (data.logradouro) {
-    elementos.rua.value = data.logradouro;
-    } else {
-    elementos.rua.value = '';
-    alert('Esse parece ser um CEP geral da cidade. A rua e o bairro precisam ser preenchidos manualmente.');
     }
 
     let bairroEncontrado = false;
@@ -237,9 +243,9 @@ async function melhorarTextoComIA(textoOriginal) {
 
 async function irParaRevisao() {
   const nome = elementos.paciente.value.trim();
-  const rua = elementos.rua.value.trim();
   const bairro = elementos.bairro.value;
-  const ubs = elementos.ubsEncontrada.value.trim();
+  const ubs = elementos.ubsEncontrada.innerText.trim();
+  const ubsId = elementos.ubsId.innerText.trim();
   const historiaOriginal = elementos.historia.value.trim();
 
   if (!nome || !bairro || !historiaOriginal || !ubs) {
@@ -256,13 +262,9 @@ async function irParaRevisao() {
   elementos.btnAvancar.innerText = textoOriginalBotao;
   elementos.btnAvancar.disabled = false;
 
-  const enderecoCompleto = rua
-    ? `${rua}, Bairro/Conjunto: ${bairro}`
-    : `Bairro/Conjunto: ${bairro}`;
-
   elementos.revPaciente.innerText = nome;
-  elementos.revEndereco.innerText = enderecoCompleto;
   elementos.revUbs.innerText = ubs;
+  elementos.revUbsId.innerText = ubsId;
   elementos.revHistoria.value = historiaMelhorada;
 
   mostrarTela('tela-preview');
@@ -273,17 +275,10 @@ function voltarParaForm() {
   mostrarTela('tela-formulario');
 }
 
-function alterarDescricao() {
-  elementos.revHistoria.focus();
-  const valor = elementos.revHistoria.value;
-  elementos.revHistoria.value = '';
-  elementos.revHistoria.value = valor;
-}
-
 function confirmarEImprimir() {
   elementos.printPaciente.innerText = elementos.revPaciente.innerText;
-  elementos.printEndereco.innerText = elementos.revEndereco.innerText;
   elementos.printUbs.innerText = elementos.revUbs.innerText;
+  elementos.printUbsId.innerText = elementos.revUbsId.innerText;
   elementos.printHistoria.innerText = elementos.revHistoria.value;
 
   window.print();
@@ -292,7 +287,6 @@ function confirmarEImprimir() {
 function configurarEventos() {
   elementos.bairro.addEventListener('change', localizarUBS);
   elementos.btnVoltar.addEventListener('click', voltarParaForm);
-  elementos.btnAlterar.addEventListener('click', alterarDescricao);
   elementos.btnImprimir.addEventListener('click', confirmarEImprimir);
 
   elementos.cep.addEventListener('blur', buscarCEP);
